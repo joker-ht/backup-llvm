@@ -36,6 +36,8 @@
 /GTAGS
 test/
 utils/
+tools/
+unittests/
 .gitusers
 autom4te.cache
 cscope.files

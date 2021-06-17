@@ -39,6 +39,13 @@ namespace llvm {
   FunctionPass *createMipsExpandPseudoPass();
   FunctionPass *createMipsPreLegalizeCombiner();
 
+  // new pass:print MBB and its succ to get its edge
+  FunctionPass *createMipsMachineBBedgePass();
+  FunctionPass *createMipsMachineBBPrinterPass();
+  FunctionPass *createMipsMachineBBdetailPass();
+  FunctionPass *createMipsMachineBBlocPass();
+  FunctionPass *createMipsMachineIRDumperPass();
+
   InstructionSelector *createMipsInstructionSelector(const MipsTargetMachine &,
                                                      MipsSubtarget &,
                                                      MipsRegisterBankInfo &);
@@ -47,6 +54,12 @@ namespace llvm {
   void initializeMipsBranchExpansionPass(PassRegistry &);
   void initializeMicroMipsSizeReducePass(PassRegistry &);
   void initializeMipsPreLegalizerCombinerPass(PassRegistry&);
+  // new pass
+  void initializeMipsMachineBBedgePass(PassRegistry &);
+  void initializeMipsMachineBBPrinterPass(PassRegistry &);
+  void initializeMipsMachineBBdetailPass(PassRegistry &);
+  void initializeMipsMachineBBlocPass(PassRegistry &);
+  void initializeMipsMachineIRDumperPass(PassRegistry &);
 } // end namespace llvm;
 
 #endif

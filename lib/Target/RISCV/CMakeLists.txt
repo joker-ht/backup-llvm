@@ -16,6 +16,9 @@ tablegen(LLVM RISCVGenSystemOperands.inc -gen-searchable-tables)
 
 add_public_tablegen_target(RISCVCommonTableGen)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../protobuf)
+message("### RISCV include protobuf")
+
 add_llvm_target(RISCVCodeGen
   RISCVAsmPrinter.cpp
   RISCVCallLowering.cpp
@@ -34,6 +37,12 @@ add_llvm_target(RISCVCodeGen
   RISCVTargetMachine.cpp
   RISCVTargetObjectFile.cpp
   RISCVTargetTransformInfo.cpp
+
+  RISCVMachineBBedge.cpp
+  RISCVMachineBBPrinter.cpp
+  RISCVMachineBBdetail.cpp
+  RISCVMachineBBloc.cpp
+  MyRISCVMachineIRDumper.cpp
   )
 
 add_subdirectory(AsmParser)

@@ -61,6 +61,28 @@ static cl::opt<bool> EnableCondBrFoldingPass("x86-condbr-folding",
                                         "folding pass"),
                                cl::init(false), cl::Hidden);
 
+// new pass
+static cl::opt<bool> EnableX86MachineBBPrinterPass("x86-MBB-printer",
+                               cl::desc("Enable the MBBPrinter pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableX86MachineBBedgePass("x86-MBB-edge",
+                               cl::desc("Enable the MBBedge pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableX86MachineBBdetailPass("x86-MBB-detail",
+                               cl::desc("Enable the MBBdetail pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableX86MachineBBlocPass("x86-MBB-loc",
+                               cl::desc("Enable the Machine instr srcline location pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableMachineIRDumperPass("my-x86-MIR-dumper",
+                               cl::desc("Enable my pass for dumping "
+                                        "Machine IR information"),
+                               cl::init(false), cl::Hidden);  
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeX86Target() {
   // Register the target.
   RegisterTargetMachine<X86TargetMachine> X(getTheX86_32Target());
@@ -83,6 +105,13 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeX86Target() {
   initializeX86FlagsCopyLoweringPassPass(PR);
   initializeX86CondBrFoldingPassPass(PR);
   initializeX86OptimizeLEAPassPass(PR);
+  // new pass 
+  initializeX86MachineBBPrinterPass(PR);
+  initializeX86MachineBBedgePass(PR);
+  initializeX86MachineBBdetailPass(PR);
+  initializeX86MachineBBlocPass(PR);
+  initializeX86MachineIRDumperPass(PR);
+
 }
 
 static std::unique_ptr<TargetLoweringObjectFile> createTLOF(const Triple &TT) {
@@ -519,6 +548,18 @@ void X86PassConfig::addPreEmitPass() {
   }
   addPass(createX86DiscriminateMemOpsPass());
   addPass(createX86InsertPrefetchPass());
+
+  // new pass
+  if (EnableX86MachineBBPrinterPass)
+  addPass(createX86MachineBBPrinterPass());
+  if (EnableX86MachineBBedgePass)
+  addPass(createX86MachineBBedgePass());
+  if (EnableX86MachineBBdetailPass)
+  addPass(createX86MachineBBdetailPass());
+  if (EnableX86MachineBBlocPass)
+  addPass(createX86MachineBBlocPass());
+  if(EnableMachineIRDumperPass)
+  addPass(createX86MachineIRDumperPass());
 }
 
 void X86PassConfig::addPreEmitPass2() {

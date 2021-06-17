@@ -48,6 +48,7 @@ static bool CanMovePastDMB(const MachineInstr *MI) {
 }
 
 bool ARMOptimizeBarriersPass::runOnMachineFunction(MachineFunction &MF) {
+  // outs() << "ok";
   if (skipFunction(MF.getFunction()))
     return false;
 

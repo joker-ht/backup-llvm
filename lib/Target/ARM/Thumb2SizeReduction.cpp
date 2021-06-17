@@ -1117,6 +1117,7 @@ bool Thumb2SizeReduce::ReduceMBB(MachineBasicBlock &MBB) {
 }
 
 bool Thumb2SizeReduce::runOnMachineFunction(MachineFunction &MF) {
+  // outs() << "ok";
   if (PredicateFtor && !PredicateFtor(MF.getFunction()))
     return false;
 

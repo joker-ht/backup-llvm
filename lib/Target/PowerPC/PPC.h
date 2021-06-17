@@ -50,6 +50,13 @@ namespace llvm {
   FunctionPass *createPPCBoolRetToIntPass();
   FunctionPass *createPPCExpandISELPass();
   FunctionPass *createPPCPreEmitPeepholePass();
+  // new pass
+  FunctionPass *createPPCMachineBBedgePass();
+  FunctionPass *createPPCMachineBBPrinterPass();
+  FunctionPass *createPPCMachineBBdetailPass();
+  FunctionPass *createPPCMachineBBlocPass();
+  FunctionPass *createPPCMachineIRDumperPass();
+
   void LowerPPCMachineInstrToMCInst(const MachineInstr *MI, MCInst &OutMI,
                                     AsmPrinter &AP, bool IsDarwin);
   bool LowerPPCMachineOperandToMCOperand(const MachineOperand &MO,
@@ -75,6 +82,12 @@ namespace llvm {
   void initializePPCPreEmitPeepholePass(PassRegistry &);
   void initializePPCTLSDynamicCallPass(PassRegistry &);
   void initializePPCMIPeepholePass(PassRegistry&);
+  // new pass
+  void initializePPCMachineBBedgePass(PassRegistry&);
+  void initializePPCMachineBBPrinterPass(PassRegistry&);
+  void initializePPCMachineBBdetailPass(PassRegistry&);
+  void initializePPCMachineBBlocPass(PassRegistry&);
+  void initializePPCMachineIRDumperPass(PassRegistry&);
 
   extern char &PPCVSXFMAMutateID;
 

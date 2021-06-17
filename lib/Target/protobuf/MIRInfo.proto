@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package mirpb; 
+
+message InstLoc {
+    string Filename = 1;
+    uint32 LineNo = 2;
+    uint32 ColNo = 3; 
+}
+
+message MIRInst {
+    string Opcode = 1;
+    repeated string Oprand = 2;
+    repeated InstLoc Locs = 3;
+}
+
+message MIRBasicBlock {
+    string MBBLabel = 1; 
+    string BBLabel = 2;  /* "NULL_BB" if no BB found*/
+    repeated MIRInst MIs = 3;
+    repeated string SuccMBBLabel = 4;
+}
+
+message MIRFunction {
+    string FuncName = 1;
+    uint32 FuncID = 2;
+    repeated MIRBasicBlock MBBs = 3;
+}
+
+message MIRFunctionBook {
+    repeated MIRFunction MFs = 1;
+}

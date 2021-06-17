@@ -21,6 +21,9 @@ tablegen(LLVM AArch64GenExegesis.inc -gen-exegesis)
 
 add_public_tablegen_target(AArch64CommonTableGen)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../protobuf)
+message("### AArch64 include protobuf")
+
 add_llvm_target(AArch64CodeGen
   AArch64A57FPLoadBalancing.cpp
   AArch64AdvSIMDScalarPass.cpp
@@ -65,6 +68,12 @@ add_llvm_target(AArch64CodeGen
   AArch64TargetObjectFile.cpp
   AArch64TargetTransformInfo.cpp
   AArch64SIMDInstrOpt.cpp
+
+  MyAArch64MachineBBedge.cpp
+  MyAArch64MachineBBPrinter.cpp
+  MyAArch64MachineBBdetail.cpp
+  MyAArch64MachineBBloc.cpp
+  MyAArch64MachineIRDumper.cpp
 
   DEPENDS
   intrinsics_gen

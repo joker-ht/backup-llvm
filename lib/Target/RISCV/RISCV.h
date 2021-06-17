@@ -43,6 +43,18 @@ void initializeRISCVMergeBaseOffsetOptPass(PassRegistry &);
 FunctionPass *createRISCVExpandPseudoPass();
 void initializeRISCVExpandPseudoPass(PassRegistry &);
 
+// new pass
+FunctionPass *createRISCVMachineBBedgePass();
+void initializeRISCVMachineBBedgePass(PassRegistry &);
+FunctionPass *createRISCVMachineBBPrinterPass();
+void initializeRISCVMachineBBPrinterPass(PassRegistry &);
+FunctionPass *createRISCVMachineBBdetailPass();
+void initializeRISCVMachineBBdetailPass(PassRegistry &);
+FunctionPass *createRISCVMachineBBlocPass();
+void initializeRISCVMachineBBlocPass(PassRegistry &);
+FunctionPass *createRISCVMachineIRDumperPass();
+void initializeRISCVMachineIRDumperPass(PassRegistry &);
+
 InstructionSelector *createRISCVInstructionSelector(const RISCVTargetMachine &,
                                                     RISCVSubtarget &,
                                                     RISCVRegisterBankInfo &);

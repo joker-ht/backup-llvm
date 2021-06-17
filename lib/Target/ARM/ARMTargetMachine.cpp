@@ -75,6 +75,30 @@ static cl::opt<cl::boolOrDefault>
 EnableGlobalMerge("arm-global-merge", cl::Hidden,
                   cl::desc("Enable the global merge pass"));
 
+// new pass option
+static cl::opt<bool>
+EnableARMMachineBBedgeOpt("arm-MBB-edge", cl::Hidden,
+                      cl::desc("Enable ARM MBB edge pass"),
+                      cl::init(false));
+static cl::opt<bool>
+EnableARMMachineBBPrinterOpt("arm-MBB-printer", cl::Hidden,
+                      cl::desc("Enable ARM MBB printer pass"),
+                      cl::init(false));
+static cl::opt<bool>
+EnableARMMachineBBdetailOpt("arm-MBB-detail", cl::Hidden,
+                      cl::desc("Enable ARM MBB detail pass"),
+                      cl::init(false));
+
+static cl::opt<bool>
+EnableARMMachineBBlocOpt("arm-MBB-loc", cl::Hidden,
+                      cl::desc("Enable ARM Machine instr srcline location pass"),
+                      cl::init(false));
+
+static cl::opt<bool>
+EnableARMMachineIRDumperOpt("my-arm-MIR-dumper", cl::Hidden,
+                      cl::desc("Enable ARM Machine IR dumper pass"),
+                      cl::init(false));
+
 namespace llvm {
   void initializeARMExecutionDomainFixPass(PassRegistry&);
 }
@@ -99,6 +123,12 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeARMTarget() {
   initializeMVETailPredicationPass(Registry);
   initializeARMLowOverheadLoopsPass(Registry);
   initializeMVEGatherScatterLoweringPass(Registry);
+
+  initializeARMMachineBBedgePass(Registry);
+  initializeARMMachineBBPrinterPass(Registry);
+  initializeARMMachineBBdetailPass(Registry);
+  initializeARMMachineBBlocPass(Registry);
+  initializeARMMachineIRDumperPass(Registry);
 }
 
 static std::unique_ptr<TargetLoweringObjectFile> createTLOF(const Triple &TT) {
@@ -534,6 +564,18 @@ void ARMPassConfig::addPreEmitPass() {
   addPass(createUnpackMachineBundles([](const MachineFunction &MF) {
     return MF.getSubtarget<ARMSubtarget>().isThumb2();
   }));
+
+  // new pass
+  if (EnableARMMachineBBedgeOpt)
+    addPass(createARMMachineBBedgePass());
+  if (EnableARMMachineBBPrinterOpt)
+    addPass(createARMMachineBBPrinterPass());
+  if (EnableARMMachineBBdetailOpt)
+    addPass(createARMMachineBBdetailPass());
+  if (EnableARMMachineBBlocOpt)
+  addPass(createARMMachineBBlocPass());
+  if (EnableARMMachineIRDumperOpt)
+  addPass(createARMMachineIRDumperPass());
 
   // Don't optimize barriers at -O0.
   if (getOptLevel() != CodeGenOpt::None)

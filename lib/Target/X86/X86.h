@@ -129,6 +129,19 @@ FunctionPass *createX86DiscriminateMemOpsPass();
 /// This pass applies profiling information to insert cache prefetches.
 FunctionPass *createX86InsertPrefetchPass();
 
+// new pass:print map of MBB and IRBB
+FunctionPass *createX86MachineBBPrinterPass();
+
+// new pass:print MBB and its succ to get its edge
+FunctionPass *createX86MachineBBedgePass();
+
+// new pass:print detail of MBB
+FunctionPass *createX86MachineBBdetailPass();
+
+FunctionPass *createX86MachineBBlocPass();
+
+FunctionPass *createX86MachineIRDumperPass();
+
 InstructionSelector *createX86InstructionSelector(const X86TargetMachine &TM,
                                                   X86Subtarget &,
                                                   X86RegisterBankInfo &);
@@ -150,6 +163,12 @@ void initializeX86ExpandPseudoPass(PassRegistry &);
 void initializeX86FlagsCopyLoweringPassPass(PassRegistry &);
 void initializeX86OptimizeLEAPassPass(PassRegistry &);
 void initializeX86SpeculativeLoadHardeningPassPass(PassRegistry &);
+// new pass
+void initializeX86MachineBBPrinterPass(PassRegistry &);
+void initializeX86MachineBBedgePass(PassRegistry &);
+void initializeX86MachineBBdetailPass(PassRegistry &);
+void initializeX86MachineBBlocPass(PassRegistry &);
+void initializeX86MachineIRDumperPass(PassRegistry &);
 
 namespace X86AS {
 enum : unsigned {

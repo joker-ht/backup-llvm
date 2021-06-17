@@ -38,6 +38,12 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVTarget() {
   auto PR = PassRegistry::getPassRegistry();
   initializeGlobalISel(*PR);
   initializeRISCVExpandPseudoPass(*PR);
+  // new pass
+  initializeRISCVMachineBBedgePass(*PR);
+  initializeRISCVMachineBBdetailPass(*PR);
+  initializeRISCVMachineBBPrinterPass(*PR);
+  initializeRISCVMachineBBlocPass(*PR);
+  initializeRISCVMachineIRDumperPass(*PR);
 }
 
 static StringRef computeDataLayout(const Triple &TT) {
@@ -48,6 +54,27 @@ static StringRef computeDataLayout(const Triple &TT) {
     return "e-m:e-p:32:32-i64:64-n32-S128";
   }
 }
+
+// new pass option
+static cl::opt<bool> EnableRISCVMachineBBPrinterPass("RISCV-MBB-printer",
+                               cl::desc("Enable the MBBPrinter pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableRISCVMachineBBedgePass("RISCV-MBB-edge",
+                               cl::desc("Enable the MBBedge pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableRISCVMachineBBdetailPass("RISCV-MBB-detail",
+                               cl::desc("Enable the MBBdetail pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableRISCVMachineBBlocPass("RISCV-MBB-loc",
+                               cl::desc("Enable the Machine instr srcline location pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableRISCVMachineIRDumperPass("my-RISCV-MIR-dumper",
+                               cl::desc("Enable the Machine IR Dumper pass"),
+                               cl::init(false), cl::Hidden);
 
 static Reloc::Model getEffectiveRelocModel(const Triple &TT,
                                            Optional<Reloc::Model> RM) {
@@ -167,7 +194,21 @@ bool RISCVPassConfig::addGlobalInstructionSelect() {
   return false;
 }
 
-void RISCVPassConfig::addPreEmitPass() { addPass(&BranchRelaxationPassID); }
+void RISCVPassConfig::addPreEmitPass() { 
+  addPass(&BranchRelaxationPassID); 
+
+  // new pass
+  if (EnableRISCVMachineBBedgePass)
+  addPass(createRISCVMachineBBedgePass()); 
+  if (EnableRISCVMachineBBPrinterPass)
+  addPass(createRISCVMachineBBPrinterPass()); 
+  if (EnableRISCVMachineBBdetailPass)
+  addPass(createRISCVMachineBBdetailPass()); 
+  if (EnableRISCVMachineBBlocPass)
+  addPass(createRISCVMachineBBlocPass()); 
+  if (EnableRISCVMachineIRDumperPass)
+  addPass(createRISCVMachineIRDumperPass()); 
+}
 
 void RISCVPassConfig::addPreEmitPass2() {
   // Schedule the expansion of AMOs at the last possible moment, avoiding the

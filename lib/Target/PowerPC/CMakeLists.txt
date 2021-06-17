@@ -14,6 +14,9 @@ tablegen(LLVM PPCGenExegesis.inc -gen-exegesis)
 
 add_public_tablegen_target(PowerPCCommonTableGen)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../protobuf)
+message("### PPC include protobuf")
+
 add_llvm_target(PowerPCCodeGen
   PPCBoolRetToInt.cpp
   PPCAsmPrinter.cpp
@@ -49,6 +52,12 @@ add_llvm_target(PowerPCCodeGen
   PPCExpandISEL.cpp
   PPCPreEmitPeephole.cpp
   PPCLowerMASSVEntries.cpp
+
+  PPCMachineBBedge.cpp
+  PPCMachineBBPrinter.cpp
+  PPCMachineBBdetail.cpp
+  PPCMachineBBloc.cpp
+  MyPPCMachineIRDumper.cpp
   )
 
 add_subdirectory(AsmParser)

@@ -45,6 +45,27 @@ using namespace llvm;
 
 #define DEBUG_TYPE "mips"
 
+// new pass option
+static cl::opt<bool> EnableMipsMachineBBedgePass("Mips-MBB-edge",
+                               cl::desc("Enable the MBBedge pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableMipsMachineBBPrinterPass("Mips-MBB-printer",
+                               cl::desc("Enable the MBBprinter pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableMipsMachineBBdetailPass("Mips-MBB-detail",
+                               cl::desc("Enable the MBBdetail pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableMipsMachineBBlocPass("Mips-MBB-loc",
+                               cl::desc("Enable the Machine instr srcline location pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableMipsMachineIRDumperPass("my-Mips-MIR-dumper",
+                               cl::desc("Enable the Machine IR dumper pass"),
+                               cl::init(false), cl::Hidden);
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeMipsTarget() {
   // Register the target.
   RegisterTargetMachine<MipsebTargetMachine> X(getTheMipsTarget());
@@ -58,6 +79,12 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeMipsTarget() {
   initializeMipsBranchExpansionPass(*PR);
   initializeMicroMipsSizeReducePass(*PR);
   initializeMipsPreLegalizerCombinerPass(*PR);
+  //new pass
+  initializeMipsMachineBBedgePass(*PR);
+  initializeMipsMachineBBPrinterPass(*PR);
+  initializeMipsMachineBBdetailPass(*PR);
+  initializeMipsMachineBBlocPass(*PR);
+  initializeMipsMachineIRDumperPass(*PR);
 }
 
 static std::string computeDataLayout(const Triple &TT, StringRef CPU,
@@ -317,6 +344,20 @@ void MipsPassConfig::addPreEmitPass() {
   addPass(createMipsBranchExpansion());
 
   addPass(createMipsConstantIslandPass());
+
+  addPass(createMipsConstantIslandPass());
+
+  // new pass
+  if (EnableMipsMachineBBedgePass)
+  addPass(createMipsMachineBBedgePass());
+  if (EnableMipsMachineBBPrinterPass)
+  addPass(createMipsMachineBBPrinterPass());
+  if (EnableMipsMachineBBdetailPass)
+  addPass(createMipsMachineBBdetailPass());
+  if (EnableMipsMachineBBlocPass)
+  addPass(createMipsMachineBBlocPass());
+  if (EnableMipsMachineIRDumperPass)
+  addPass(createMipsMachineIRDumperPass());
 }
 
 bool MipsPassConfig::addIRTranslator() {

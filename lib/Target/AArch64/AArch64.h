@@ -59,6 +59,13 @@ FunctionPass *createAArch64PreLegalizeCombiner(bool IsOptNone);
 FunctionPass *createAArch64StackTaggingPass(bool MergeInit);
 FunctionPass *createAArch64StackTaggingPreRAPass();
 
+// new pass
+FunctionPass *createAArch64MachineBBedgePass();
+FunctionPass *createAArch64MachineBBPrinterPass();
+FunctionPass *createAArch64MachineBBdetailPass();
+FunctionPass *createAArch64MachineBBlocPass();
+FunctionPass *createAArch64MachineIRDumperPass();
+
 void initializeAArch64A53Fix835769Pass(PassRegistry&);
 void initializeAArch64A57FPLoadBalancingPass(PassRegistry&);
 void initializeAArch64AdvSIMDScalarPass(PassRegistry&);
@@ -82,6 +89,14 @@ void initializeFalkorMarkStridedAccessesLegacyPass(PassRegistry&);
 void initializeLDTLSCleanupPass(PassRegistry&);
 void initializeAArch64StackTaggingPass(PassRegistry&);
 void initializeAArch64StackTaggingPreRAPass(PassRegistry&);
+
+// new pass
+void initializeAArch64MachineBBedgePass(PassRegistry&);
+void initializeAArch64MachineBBPrinterPass(PassRegistry&);
+void initializeAArch64MachineBBdetailPass(PassRegistry&);
+void initializeAArch64MachineBBlocPass(PassRegistry&);
+void initializeAArch64MachineIRDumperPass(PassRegistry&);
+
 } // end namespace llvm
 
 #endif

@@ -154,6 +154,28 @@ static cl::opt<bool>
                         cl::desc("Enable the AAcrh64 branch target pass"),
                         cl::init(true));
 
+// new pass option
+static cl::opt<bool> EnableAArch64MachineBBedgePass("AArch64-MBB-edge",
+                               cl::desc("Enable the MBBedge pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableAArch64MachineBBPrinterPass("AArch64-MBB-printer",
+                               cl::desc("Enable the MBBPrinter pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableAArch64MachineBBdetailPass("AArch64-MBB-detail",
+                               cl::desc("Enable the MBBdetail pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableAArch64MachineBBlocPass("AArch64-MBB-loc",
+                               cl::desc("Enable the MBB instr location pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnableAArch64MachineIRDumperPass("my-AArch64-MIR-dumper",
+                               cl::desc("Enable the MIRinfo dumper pass"),
+                               cl::init(false), cl::Hidden);
+
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeAArch64Target() {
   // Register the target.
   RegisterTargetMachine<AArch64leTargetMachine> X(getTheAArch64leTarget());
@@ -185,6 +207,12 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeAArch64Target() {
   initializeAArch64SpeculationHardeningPass(*PR);
   initializeAArch64StackTaggingPass(*PR);
   initializeAArch64StackTaggingPreRAPass(*PR);
+  // new pass
+  initializeAArch64MachineBBedgePass(*PR);
+  initializeAArch64MachineBBPrinterPass(*PR);
+  initializeAArch64MachineBBdetailPass(*PR);
+  initializeAArch64MachineBBlocPass(*PR);
+  initializeAArch64MachineIRDumperPass(*PR);
 }
 
 //===----------------------------------------------------------------------===//
@@ -648,4 +676,16 @@ void AArch64PassConfig::addPreEmitPass() {
   if (TM->getOptLevel() != CodeGenOpt::None && EnableCollectLOH &&
       TM->getTargetTriple().isOSBinFormatMachO())
     addPass(createAArch64CollectLOHPass());
+  
+  // new pass
+  if (EnableAArch64MachineBBedgePass)
+    addPass(createAArch64MachineBBedgePass());
+  if (EnableAArch64MachineBBPrinterPass)
+    addPass(createAArch64MachineBBPrinterPass());
+  if (EnableAArch64MachineBBdetailPass)
+    addPass(createAArch64MachineBBdetailPass());
+  if (EnableAArch64MachineBBlocPass)
+    addPass(createAArch64MachineBBlocPass());
+  if (EnableAArch64MachineIRDumperPass)
+    addPass(createAArch64MachineIRDumperPass());
 }

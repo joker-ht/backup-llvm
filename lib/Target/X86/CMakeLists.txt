@@ -21,6 +21,9 @@ endif()
 
 add_public_tablegen_target(X86CommonTableGen)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../protobuf)
+message("### x86 include protobuf")
+
 set(sources
   X86AsmPrinter.cpp
   X86AvoidTrailingCall.cpp
@@ -69,6 +72,12 @@ set(sources
   X86VZeroUpper.cpp
   X86WinAllocaExpander.cpp
   X86WinEHState.cpp
+
+  X86MachineBBPrinter.cpp
+  X86MachineBBedge.cpp
+  X86MachineBBdetail.cpp
+  X86MachineBBloc.cpp
+  MyX86MachineIRDumper.cpp
   )
 
 add_llvm_target(X86CodeGen ${sources})

@@ -94,6 +94,28 @@ static cl::opt<bool>
   ReduceCRLogical("ppc-reduce-cr-logicals",
                   cl::desc("Expand eligible cr-logical binary ops to branches"),
                   cl::init(true), cl::Hidden);
+
+// new pass option
+static cl::opt<bool> EnablePPCMachineBBedgePass("PPC-MBB-edge",
+                               cl::desc("Enable the MBBedge pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnablePPCMachineBBPrinterPass("PPC-MBB-printer",
+                               cl::desc("Enable the MBBprinter pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnablePPCMachineBBdetailPass("PPC-MBB-detail",
+                               cl::desc("Enable the MBBdetail pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnablePPCMachineBBlocPass("PPC-MBB-loc",
+                               cl::desc("Enable the MBB srcline location pass"),
+                               cl::init(false), cl::Hidden);
+
+static cl::opt<bool> EnablePPCMachineIRDumperPass("my-PPC-MIR-dumper",
+                               cl::desc("Enable the mahcine ir dumper pass"),
+                               cl::init(false), cl::Hidden);
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializePowerPCTarget() {
   // Register the targets
   RegisterTargetMachine<PPCTargetMachine> A(getThePPC32Target());
@@ -120,6 +142,13 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializePowerPCTarget() {
   initializePPCTLSDynamicCallPass(PR);
   initializePPCMIPeepholePass(PR);
   initializePPCLowerMASSVEntriesPass(PR);
+  //new pass
+  initializePPCMachineBBedgePass(PR);
+  initializePPCMachineBBPrinterPass(PR);
+  initializePPCMachineBBdetailPass(PR);
+  initializePPCMachineBBlocPass(PR);
+  initializePPCMachineIRDumperPass(PR);
+
 }
 
 /// Return the datalayout string of a subtarget.
@@ -520,6 +549,18 @@ void PPCPassConfig::addPreSched2() {
 void PPCPassConfig::addPreEmitPass() {
   addPass(createPPCPreEmitPeepholePass());
   addPass(createPPCExpandISELPass());
+
+  // new pass
+  if (EnablePPCMachineBBedgePass)
+  addPass(createPPCMachineBBedgePass());
+  if (EnablePPCMachineBBPrinterPass)
+  addPass(createPPCMachineBBPrinterPass());
+  if (EnablePPCMachineBBdetailPass)
+  addPass(createPPCMachineBBdetailPass());
+  if (EnablePPCMachineBBlocPass)
+  addPass(createPPCMachineBBlocPass());
+  if (EnablePPCMachineIRDumperPass)
+  addPass(createPPCMachineIRDumperPass());
 
   if (getOptLevel() != CodeGenOpt::None)
     addPass(createPPCEarlyReturnPass(), false);

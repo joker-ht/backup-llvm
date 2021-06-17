@@ -17,6 +17,9 @@ tablegen(LLVM MipsGenExegesis.inc -gen-exegesis)
 
 add_public_tablegen_target(MipsCommonTableGen)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../protobuf)
+message("### Mips include protobuf")
+
 add_llvm_target(MipsCodeGen
   Mips16FrameLowering.cpp
   Mips16HardFloat.cpp
@@ -57,6 +60,12 @@ add_llvm_target(MipsCodeGen
   MipsTargetMachine.cpp
   MipsTargetObjectFile.cpp
   MicroMipsSizeReduction.cpp
+
+  MipsMachineBBedge.cpp
+  MipsMachineBBPrinter.cpp
+  MipsMachineBBdetail.cpp
+  MipsMachineBBloc.cpp
+  MyMipsMachineIRDumper.cpp
   )
 
 add_subdirectory(AsmParser)

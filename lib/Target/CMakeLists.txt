@@ -13,6 +13,9 @@ add_llvm_component_library(LLVMTarget
   ${LLVM_MAIN_INCLUDE_DIR}/llvm/Target
   )
 
+add_subdirectory(protobuf)
+target_link_libraries(LLVMTarget PRIVATE proto)
+
 # When building shared objects for each target there are some internal APIs
 # that are used across shared objects which we can't hide.
 if (NOT BUILD_SHARED_LIBS AND NOT APPLE)

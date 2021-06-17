@@ -17,6 +17,9 @@ tablegen(LLVM ARMGenSystemRegister.inc -gen-searchable-tables)
 
 add_public_tablegen_target(ARMCommonTableGen)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../protobuf)
+message("### ARM include protobuf")
+
 add_llvm_target(ARMCodeGen
   A15SDOptimizer.cpp
   ARMAsmPrinter.cpp
@@ -60,6 +63,12 @@ add_llvm_target(ARMCodeGen
   Thumb2ITBlockPass.cpp
   Thumb2InstrInfo.cpp
   Thumb2SizeReduction.cpp
+
+  ARMMachineBBPrinter.cpp
+  ARMMachineBBedge.cpp
+  ARMMachineBBdetail.cpp
+  ARMMachineBBloc.cpp
+  MyARMMachineIRDumper.cpp
   )
 
 add_subdirectory(AsmParser)
