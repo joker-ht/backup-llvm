@@ -120,6 +120,32 @@ char &llvm::BranchFolderPassID = BranchFolderPass::ID;
 INITIALIZE_PASS(BranchFolderPass, DEBUG_TYPE,
                 "Control Flow Optimizer", false, false)
 
+static void testBUG(MachineFunction *MF, int count) {
+  if (!MF) return;
+  if (MF->getFunction().getName() == "path_openat") {
+    for (auto &MBB : *MF) {
+      if (MBB.getName() == "%337") {
+        errs() << count << '\n'; 
+        MBB.dump();
+        break;
+      }
+    }
+  }
+}
+
+static void testBUG(MachineBasicBlock *MBB, int count) {
+  if (MBB->getParent()) {
+    MachineFunction *MF = MBB->getParent();
+    if (MF->getFunction().getName() == "path_openat") {
+      if (MBB->getName() == "%337") {
+        errs() << count << '\n'; 
+        MBB->dump();
+      }
+    }
+    
+  }
+}
+
 bool BranchFolderPass::runOnMachineFunction(MachineFunction &MF) {
   if (skipFunction(MF.getFunction()))
     return false;
@@ -855,6 +881,7 @@ mergeOperations(MachineBasicBlock::iterator MBBIStartPos,
 void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
   MachineBasicBlock *MBB = SameTails[commonTailIndex].getBlock();
 
+  MachineFunction *MF = MBB->getParent();
   std::vector<MachineBasicBlock::iterator> NextCommonInsts(SameTails.size());
   for (unsigned int i = 0 ; i != SameTails.size() ; ++i) {
     if (i != commonTailIndex) {
@@ -883,13 +910,25 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
             "Reached BB end within common tail");
       }
       assert(MI.isIdenticalTo(*Pos) && "Expected matching MIIs!");
+      // if (MBB->getParent()) {
+      //   auto MF = MBB->getParent();
+      //   if (MF->getFunction().getName() == "path_openat") {
+      //     if (MBB->getName() == "%337") {
+      //       // errs() << count << '\n'; 
+      //       MBB->dump();
+      //       DL.dump();
+      //       Pos->getDebugLoc().dump();
+      //     }
+      //   }
+      // }
       DL = DILocation::getMergedLocation(DL, Pos->getDebugLoc());
       NextCommonInsts[i] = ++Pos;
     }
-    // if (DL )
+    // testBUG(MBB, 1);
     MI.setDebugLoc(DL);
+    // testBUG(MBB, 2);
   }
-
+  
   if (UpdateLiveIns) {
     LivePhysRegs NewLiveIns(*TRI);
     computeLiveIns(NewLiveIns, *MBB);
@@ -928,7 +967,9 @@ bool BranchFolder::TryTailMergeBlocks(MachineBasicBlock *SuccBB,
                                       MachineBasicBlock *PredBB,
                                       unsigned MinCommonTailLength) {
   bool MadeChange = false;
-
+  // MachineFunction *MF = nullptr;
+  // if (SuccBB)
+  //   MF = SuccBB->getParent();
   LLVM_DEBUG(
       dbgs() << "\nTryTailMergeBlocks: ";
       for (unsigned i = 0, e = MergePotentials.size(); i != e; ++i) dbgs()
@@ -1014,11 +1055,11 @@ bool BranchFolder::TryTailMergeBlocks(MachineBasicBlock *SuccBB,
 
     // Recompute common tail MBB's edge weights and block frequency.
     setCommonTailEdgeWeights(*MBB);
-
+    // testBUG(MF, 3);
     // Merge debug locations, MMOs and undef flags across identical instructions
     // for common tail.
     mergeCommonTails(commonTailIndex);
-
+    // testBUG(MF, 4);
     // MBB is common tail.  Adjust all other BB's to jump to this one.
     // Traversal must be forwards so erases work.
     LLVM_DEBUG(dbgs() << "\nUsing common tail in " << printMBBReference(*MBB)
@@ -1300,11 +1341,31 @@ static bool IsBetterFallthrough(MachineBasicBlock *MBB1,
 
 /// getBranchDebugLoc - Find and return, if any, the DebugLoc of the branch
 /// instructions on the block.
+// static DebugLoc getBranchDebugLoc(MachineBasicBlock &MBB) {
+//   MachineBasicBlock::iterator I = MBB.getLastNonDebugInstr();
+//   if (I != MBB.end() && I->isBranch())
+//     return I->getDebugLoc();
+//   return DebugLoc();
+// }
+
+/// DING patch: new implementation of getBranchDebugLoc
+/// The former impletation can handle this situation: the last branch inst
+/// is added without debugloc, so it just return null.
 static DebugLoc getBranchDebugLoc(MachineBasicBlock &MBB) {
-  MachineBasicBlock::iterator I = MBB.getLastNonDebugInstr();
-  if (I != MBB.end() && I->isBranch())
-    return I->getDebugLoc();
-  return DebugLoc();
+  DebugLoc DL;
+
+  MachineBasicBlock::iterator TI = MBB.getFirstTerminator();
+  while (TI != MBB.end() && !TI->isBranch())
+    ++TI;
+
+  if (TI != MBB.end()) {
+    DL = TI->getDebugLoc();
+    // Todo: there may be 2 branbch inst, we ignore the 2nd one as the first
+    // is conbined with cmp inst.
+  }
+    
+  return DL;
+
 }
 
 static void copyDebugInfoToPredecessor(const TargetInstrInfo *TII,
@@ -1735,6 +1796,7 @@ ReoptimizeBlock:
           if (CurFallsThru) {
             MachineBasicBlock *NextBB = &*std::next(MBB->getIterator());
             CurCond.clear();
+            // here insert a null debugloc, lead to a null return of getBranchDebugLoc
             TII->insertBranch(*MBB, NextBB, nullptr, CurCond, DebugLoc());
           }
           MBB->moveAfter(PredBB);

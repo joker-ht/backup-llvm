@@ -7885,6 +7885,10 @@ SDNode *SelectionDAG::MorphNodeTo(SDNode *N, unsigned Opc,
   for (SDNode::op_iterator I = N->op_begin(), E = N->op_end(); I != E; ) {
     SDUse &Use = *I++;
     SDNode *Used = Use.getNode();
+    // dingzhu Patch: if opcode contains setcc node, inherit its debugloc
+    if (Used->getOpcode() == ISD::SETCC) {
+      N->setDebugLoc(Used->getDebugLoc());
+    }
     Use.set(SDValue());
     if (Used->use_empty())
       DeadNodeSet.insert(Used);

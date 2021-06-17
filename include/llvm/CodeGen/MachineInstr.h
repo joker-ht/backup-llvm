@@ -33,6 +33,12 @@
 #include <cassert>
 #include <cstdint>
 #include <utility>
+#include <string>
+#include <list>
+#include <tuple>
+
+
+typedef std::list<std::tuple<std::string,unsigned,unsigned>> DebuginfoList;
 
 namespace llvm {
 
@@ -424,6 +430,13 @@ public:
 
   /// Returns the opcode of this MachineInstr.
   unsigned getOpcode() const { return MCID->Opcode; }
+
+  // dingzhu 
+  /// Returns the opcode name of this MachineInstr.
+  std::string getOpcodeName() const;
+
+  /// write debuginfo to DebuginfoList
+  void getDebugInfoTree(DebuginfoList &DIList,bool &status);
 
   /// Retuns the total number of operands.
   unsigned getNumOperands() const { return NumOperands; }

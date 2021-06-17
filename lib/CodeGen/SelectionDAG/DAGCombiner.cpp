@@ -8629,6 +8629,10 @@ SDValue DAGCombiner::visitSELECT(SDNode *N) {
 
   // Fold selects based on a setcc into other things, such as min/max/abs.
   if (N0.getOpcode() == ISD::SETCC) {
+    // dingzhu patch
+    if (!DL.getDebugLoc().get()) {
+      DL = SDLoc(N0);
+    }
     SDValue Cond0 = N0.getOperand(0), Cond1 = N0.getOperand(1);
     ISD::CondCode CC = cast<CondCodeSDNode>(N0.getOperand(2))->get();
 
@@ -13533,7 +13537,11 @@ SDValue DAGCombiner::visitBRCOND(SDNode *N) {
   if (N1.getOpcode() == ISD::SETCC &&
       TLI.isOperationLegalOrCustom(ISD::BR_CC,
                                    N1.getOperand(0).getValueType())) {
-    return DAG.getNode(ISD::BR_CC, SDLoc(N), MVT::Other,
+    // pass the detailed debugloc to BR_CC node
+    // SDValue SN;
+    unsigned order = N->getIROrder();
+    N1.getNode()->setIROrder(order);
+    return DAG.getNode(ISD::BR_CC, SDLoc(N1.getNode()), MVT::Other,
                        Chain, N1.getOperand(2),
                        N1.getOperand(0), N1.getOperand(1), N2);
   }

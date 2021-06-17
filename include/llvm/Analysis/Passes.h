@@ -110,6 +110,8 @@ namespace llvm {
   //
   ModulePass *createMustBeExecutedContextPrinter();
 
+  ModulePass *createDependencyDumperPass();
+
 }
 
 #endif

@@ -914,8 +914,59 @@ const TargetRegisterClass *MachineInstr::getRegClassConstraintEffect(
   return CurRC;
 }
 
-/// Return the number of instructions inside the MI bundle, not counting the
-/// header instruction.
+// dingzhu
+// Returns the opcode name of this MachineInstr.
+std::string MachineInstr::getOpcodeName() const{
+  const MachineFunction *MF = getMFIfAvailable(*this);
+  const TargetInstrInfo *TII = MF->getSubtarget().getInstrInfo();
+  if (TII){
+      std::string opcodename = TII->getName(getOpcode());
+      return opcodename;
+  }
+  return "unknown opcode";
+}
+
+// / write debuginfo to DebuginfoList
+void MachineInstr::getDebugInfoTree(DebuginfoList &DIList, bool &status){
+  const DebugLoc &debugInfo = this->getDebugLoc();
+  if (!debugInfo) {
+    status = false;
+    return;
+  }
+
+  DebugLoc debugInfoTmp = debugInfo;
+  do {
+    auto *Scope = cast<DIScope>(debugInfoTmp.getScope());
+    std::string filename = (*Scope).getFilename();
+    unsigned linenub = debugInfoTmp.getLine();
+    unsigned colnub = debugInfoTmp.getCol();
+    DIList.push_back(make_tuple(filename, linenub, colnub));
+  } while ((debugInfoTmp = debugInfoTmp.getInlinedAt()));
+
+  status = true;
+  return;
+
+}
+// bool MachineInstr::setDebugInfoTree(DebuginfoList &DIList){
+//   const DebugLoc &debugInfo = this->getDebugLoc();
+//   if (!debugInfo)
+//     return false;
+
+// DebugLoc debugInfoTmp = debugInfo;
+// do {
+//   auto *Scope = cast<DIScope>(debugInfoTmp.getScope());
+//   std::string filename = (*Scope).getFilename();
+//   unsigned linenub = debugInfoTmp.getLine();
+//   unsigned colnub = debugInfoTmp.getCol();
+//   DIList.push_back(make_tuple(filename, linenub, colnub));
+// } while ((debugInfoTmp = debugInfoTmp.getInlinedAt()));
+
+// return true;
+
+// }
+
+// Return the number of instructions inside the MI bundle, not counting the
+// header instruction.
 unsigned MachineInstr::getBundleSize() const {
   MachineBasicBlock::const_instr_iterator I = getIterator();
   unsigned Size = 0;

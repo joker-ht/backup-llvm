@@ -1317,9 +1317,11 @@ MachineBasicBlock::findBranchDebugLoc() {
 
   if (TI != end()) {
     DL = TI->getDebugLoc();
-    for (++TI ; TI != end() ; ++TI)
-      if (TI->isBranch())
-        DL = DILocation::getMergedLocation(DL, TI->getDebugLoc());
+    // LLVM dev choose a vague dbginfo while dealing with merging 2 diff dbginfo 
+    // However, we focus on cmp inst, so we just need the first dbginfo
+    // for (++TI ; TI != end() ; ++TI)
+    //   if (TI->isBranch())
+    //     DL = DILocation::getMergedLocation(DL, TI->getDebugLoc());
   }
   return DL;
 }

@@ -1215,6 +1215,8 @@ bool CodeGenPrepare::replaceMathCmpWithIntrinsic(BinaryOperator *BO,
   // Insert at the first instruction of the pair.
   Instruction *InsertPt = nullptr;
   for (Instruction &Iter : *Cmp->getParent()) {
+    // dingzhu patch: here if iter first meet BO, builder will inherit its dbgloc
+    // we change logic here: if first meet BO, keep iterate until neet cmp
     if (&Iter == BO || &Iter == Cmp) {
       InsertPt = &Iter;
       break;
@@ -1222,10 +1224,22 @@ bool CodeGenPrepare::replaceMathCmpWithIntrinsic(BinaryOperator *BO,
   }
   assert(InsertPt != nullptr && "Parent block did not contain cmp or binop");
 
-  IRBuilder<> Builder(InsertPt);
-  Value *MathOV = Builder.CreateBinaryIntrinsic(IID, Arg0, Arg1);
-  Value *Math = Builder.CreateExtractValue(MathOV, 0, "math");
-  Value *OV = Builder.CreateExtractValue(MathOV, 1, "ov");
+  // dingzhu patch
+  Value *MathOV, *Math, *OV;
+  if (InsertPt != Cmp) {
+    IRBuilder<> SBuilder(InsertPt, Cmp);
+    MathOV = SBuilder.CreateBinaryIntrinsic(IID, Arg0, Arg1);
+    Math = SBuilder.CreateExtractValue(MathOV, 0, "math");
+    OV = SBuilder.CreateExtractValue(MathOV, 1, "ov");
+  }
+  else {
+    IRBuilder<> Builder(InsertPt);
+    MathOV = Builder.CreateBinaryIntrinsic(IID, Arg0, Arg1);
+    Math = Builder.CreateExtractValue(MathOV, 0, "math");
+    OV = Builder.CreateExtractValue(MathOV, 1, "ov");
+  }
+
+  
   BO->replaceAllUsesWith(Math);
   Cmp->replaceAllUsesWith(OV);
   BO->eraseFromParent();

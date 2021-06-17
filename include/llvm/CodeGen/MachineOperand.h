@@ -309,6 +309,10 @@ public:
              const TargetRegisterInfo *TRI = nullptr,
              const TargetIntrinsicInfo *IntrinsicInfo = nullptr) const;
 
+  // dingzhu
+  // return the name of this operand
+  std::string getOperandName() const;
+
   void dump() const;
 
   //===--------------------------------------------------------------------===//

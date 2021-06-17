@@ -2613,6 +2613,19 @@ void MachineBlockPlacement::buildLoopChains(const MachineLoop &L) {
   EHPadWorkList.clear();
 }
 
+static void testBug(MachineFunction *MF, int count) {
+  if (MF->getFunction().getName() == 
+    "do_iter_read") {
+    for (auto &MBB : *MF) {
+      if (MBB.getName() == "%43") {
+        llvm::errs() << count << '\n';
+        MBB.dump();
+        break;
+      }
+    }
+  }
+}
+
 void MachineBlockPlacement::buildCFGChains() {
   // Ensure that every BB in the function has an associated chain to simplify
   // the assumptions of the remaining algorithm.
@@ -2786,9 +2799,14 @@ void MachineBlockPlacement::optimizeBranches() {
         LLVM_DEBUG(dbgs() << "    Edge probability: "
                           << MBPI->getEdgeProbability(ChainBB, FBB) << " vs "
                           << MBPI->getEdgeProbability(ChainBB, TBB) << "\n");
-        DebugLoc dl; // FIXME: this is nowhere
+        // DebugLoc dl; // FIXME: this is nowhere
+        // Patch: dl should not be a null
+
+        DebugLoc dl = ChainBB->findBranchDebugLoc();
+        // testBug(ChainBB->getParent(), 2);
         TII->removeBranch(*ChainBB);
         TII->insertBranch(*ChainBB, FBB, TBB, Cond, dl);
+        // testBug(ChainBB->getParent(), 3);
         ChainBB->updateTerminator();
       }
     }
@@ -3034,6 +3052,19 @@ bool MachineBlockPlacement::maybeTailDuplicateBlock(
     }
   }
   return Removed;
+}
+
+static void testBug(MachineFunction &MF, int count) {
+  if (MF.getFunction().getName() == 
+    "do_iter_read") {
+    for (auto &MBB : MF) {
+      if (MBB.getName() == "%43") {
+        errs() << count << '\n';
+        MBB.dump();
+        break;
+      }
+    }
+  }
 }
 
 bool MachineBlockPlacement::runOnMachineFunction(MachineFunction &MF) {

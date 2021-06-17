@@ -143,6 +143,14 @@ public:
     SetCurrentDebugLocation(I->getDebugLoc());
   }
 
+  // dingzhu patch
+  void SetInsertPoint(Instruction *I, Instruction *SI) {
+    BB = I->getParent();
+    InsertPt = SI->getIterator();
+    assert(InsertPt != BB->end() && "Can't read debug loc from end()");
+    SetCurrentDebugLocation(SI->getDebugLoc());
+  }
+
   /// This specifies that created instructions should be inserted at the
   /// specified point.
   void SetInsertPoint(BasicBlock *TheBB, BasicBlock::iterator IP) {
@@ -894,6 +902,17 @@ public:
       : IRBuilderBase(IP->getContext(), FPMathTag, OpBundles) {
     SetInsertPoint(IP);
   }
+
+  // dingzhu patch: the above constructor only set one debugloc of the 
+  // input inst, we need to input 2 inst and inherit 2 debugloc
+  //    now we inherit cmp's debugloc
+  //    todo: implement debugloclist
+  explicit IRBuilder(Instruction *IP, Instruction *SP, MDNode *FPMathTag = nullptr,
+                     ArrayRef<OperandBundleDef> OpBundles = None)
+      : IRBuilderBase(IP->getContext(), FPMathTag, OpBundles) {
+    SetInsertPoint(IP, SP);
+  }
+
 
   IRBuilder(BasicBlock *TheBB, BasicBlock::iterator IP, const T &F,
             MDNode *FPMathTag = nullptr,
