@@ -841,9 +841,14 @@ static void performSink(MachineInstr &MI, MachineBasicBlock &SuccToSinkTo,
   // If we cannot find a location to use (merge with), then we erase the debug
   // location to prevent debug-info driven tools from potentially reporting
   // wrong location information.
-  if (!SuccToSinkTo.empty() && InsertPos != SuccToSinkTo.end())
+  if (!SuccToSinkTo.empty() && InsertPos != SuccToSinkTo.end()) {
+    // dingzhu patch
+    if (InsertPos->getDebugLoc()) {
+      MI.appendDebugLocList(InsertPos->getDebugLoc());
+    }
     MI.setDebugLoc(DILocation::getMergedLocation(MI.getDebugLoc(),
                                                  InsertPos->getDebugLoc()));
+  }
   else
     MI.setDebugLoc(DebugLoc());
 

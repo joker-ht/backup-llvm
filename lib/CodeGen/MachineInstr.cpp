@@ -73,6 +73,8 @@
 #include <cstring>
 #include <iterator>
 #include <utility>
+// dingzhu patch
+#include <set>
 
 using namespace llvm;
 
@@ -117,7 +119,10 @@ MachineInstr::MachineInstr(MachineFunction &MF, const MCInstrDesc &tid,
                            DebugLoc dl, bool NoImp)
     : MCID(&tid), debugLoc(std::move(dl)) {
   assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
-
+  // dingzhu patch
+  if (debugLoc) {
+    DebugLocList.insert(debugLoc);
+  }
   // Reserve space for the expected number of operands.
   if (unsigned NumOps = MCID->getNumOperands() +
     MCID->getNumImplicitDefs() + MCID->getNumImplicitUses()) {
@@ -134,7 +139,11 @@ MachineInstr::MachineInstr(MachineFunction &MF, const MCInstrDesc &tid,
 MachineInstr::MachineInstr(MachineFunction &MF, const MachineInstr &MI)
     : MCID(&MI.getDesc()), Info(MI.Info), debugLoc(MI.getDebugLoc()) {
   assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
-
+  // dingzhu patch
+  if (debugLoc)
+    DebugLocList.insert(debugLoc);
+  auto dllist = MI.getDebugLocList();
+  DebugLocList.insert(dllist.begin(), dllist.end());
   CapOperands = OperandCapacity::get(MI.getNumOperands());
   Operands = MF.allocateOperandArray(CapOperands);
 
@@ -1808,6 +1817,20 @@ void MachineInstr::print(raw_ostream &OS, ModuleSlotTracker &MST,
     DL.print(OS);
   }
 
+  // dingzhu patch
+  // print DebugLocList
+  if (DebugLocList.size()) {
+    std::set<DebugLoc>::iterator it = DebugLocList.begin();
+    OS << "\nDebugLocList: ";
+    int count = 0;
+    for (; it != DebugLocList.end(); ++it) {
+      if (*it) {
+        ++count;
+        OS << count << ".";
+        it->print(OS);
+      }
+    }
+  }
   // Print extra comments for DEBUG_VALUE.
   if (isDebugValue() && getOperand(e - 2).isMetadata()) {
     if (!HaveSemi) {

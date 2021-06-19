@@ -31,6 +31,8 @@
 #include <iterator>
 #include <string>
 #include <vector>
+// dingzhu patch
+#include <set>
 
 namespace llvm {
 
@@ -82,6 +84,8 @@ private:
 
   Instructions Insts;
   const BasicBlock *BB;
+  /// dingzhu patch
+  std::set<const BasicBlock*> BBList;
   int Number;
   MachineFunction *xParent;
 
@@ -148,6 +152,18 @@ public:
   /// Note that this may be NULL if this instance does not correspond directly
   /// to an LLVM basic block.
   const BasicBlock *getBasicBlock() const { return BB; }
+
+  /// dingzhu patch
+  bool setBasicBlock (const BasicBlock* TBB) 
+  {if (BB) {return false;} else {BB = TBB; return true;}}
+
+  void setBasicBlockList(std::set<const BasicBlock*> BBs) {BBList = BBs;}
+
+  void appendBasicBlockList(std::set<const BasicBlock*> BBs) {BBList.insert(BBs.begin(), BBs.end());}
+
+  void appendBasicBlockList(const BasicBlock* BB) {BBList.insert(BB);}
+
+  const std::set<const BasicBlock*> getBBList() const { return BBList;}
 
   /// Return the name of the corresponding LLVM basic block, or an empty string.
   StringRef getName() const;
@@ -765,6 +781,8 @@ public:
   /// block. Return UnknownLoc if there is none.
   DebugLoc findBranchDebugLoc();
 
+  /// dingzhu patch
+  std::vector<DebugLoc> findBranchDebugLocList();
   /// Possible outcome of a register liveness query to computeRegisterLiveness()
   enum LivenessQueryResult {
     LQR_Live,   ///< Register is known to be (at least partially) live.

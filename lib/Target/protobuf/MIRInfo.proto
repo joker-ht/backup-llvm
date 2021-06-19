@@ -8,15 +8,21 @@ message InstLoc {
     uint32 ColNo = 3; 
 }
 
+message InstLocList {
+    repeated InstLoc Locs = 1;
+}
+
 message MIRInst {
     string Opcode = 1;
     repeated string Oprand = 2;
     repeated InstLoc Locs = 3;
+    repeated InstLocList LocLists = 4;
 }
 
 message MIRBasicBlock {
     string MBBLabel = 1; 
     string BBLabel = 2;  /* "NULL_BB" if no BB found*/
+    repeated string BBLabelList = 5;
     repeated MIRInst MIs = 3;
     repeated string SuccMBBLabel = 4;
 }

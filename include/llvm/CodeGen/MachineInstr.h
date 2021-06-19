@@ -36,6 +36,9 @@
 #include <string>
 #include <list>
 #include <tuple>
+// dingzhu patch
+#include <vector>
+#include <set>
 
 
 typedef std::list<std::tuple<std::string,unsigned,unsigned>> DebuginfoList;
@@ -249,7 +252,8 @@ private:
       Info;
 
   DebugLoc debugLoc;                    // Source line information.
-
+  // dingzhu patch
+  std::set<DebugLoc> DebugLocList;
   // Intrusive list support
   friend struct ilist_traits<MachineInstr>;
   friend struct ilist_callback_traits<MachineBasicBlock>;
@@ -404,6 +408,10 @@ public:
 
   /// Returns the debug location id of this MachineInstr.
   const DebugLoc &getDebugLoc() const { return debugLoc; }
+
+  /// dingzhu patch
+  /// Returns the debug location list of this MachineInstr.
+  const std::set<DebugLoc> &getDebugLocList() const { return DebugLocList; }
 
   /// Return the debug variable referenced by
   /// this DBG_VALUE instruction.
@@ -1575,7 +1583,22 @@ public:
   /// Avoid using this, the constructor argument is preferable.
   void setDebugLoc(DebugLoc dl) {
     debugLoc = std::move(dl);
+    // dingzhu patch
+    // set DebugLocList while set debugloc
+    if (debugLoc)
+      DebugLocList.insert(debugLoc);
     assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
+  }
+
+  /// dingzhu patch
+  /// add new debugloc to DebugLocList
+  void appendDebugLocList(DebugLoc dl) {
+    DebugLocList.insert(std::move(dl));
+  }
+
+  /// add new debugloclist to DebugLocList
+  void appendDebugLocList(std::set<DebugLoc> dblist) {
+    DebugLocList.insert(dblist.begin(), dblist.end());
   }
 
   /// Erase an operand from an instruction, leaving it with one

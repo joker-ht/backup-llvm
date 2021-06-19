@@ -37,6 +37,7 @@ bool AArch64MachineBBdetail::runOnMachineFunction(MachineFunction &MF) {
     for (auto &MBB : MF) {
         std::string MBBID = std::to_string(MFID) + "_" + std::to_string(MBB.getNumber());
         outs() << "FUNC ID and BB ID:" << MBBID << '\n';
+        if (!MBB.getBasicBlock()) outs() << "no label" << '\n';
         outs() << MBB << "\n";
     }
 

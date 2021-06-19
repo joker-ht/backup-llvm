@@ -27,6 +27,8 @@
 #include <cassert>
 #include <cstdint>
 #include <utility>
+// dingzhu patch
+#include <vector>
 
 namespace llvm {
 
@@ -44,6 +46,8 @@ class Instruction : public User,
                     public ilist_node_with_parent<Instruction, BasicBlock> {
   BasicBlock *Parent;
   DebugLoc DbgLoc;                         // 'dbg' Metadata cache.
+  // dingzhu patch
+  std::vector<DebugLoc> DbgLocList;
 
   enum {
     /// This is a bit stored in the SubClassData field which indicates whether
@@ -329,6 +333,9 @@ public:
 
   /// Return the debug location for this node as a DebugLoc.
   const DebugLoc &getDebugLoc() const { return DbgLoc; }
+
+  /// dingzhu patch
+  void pushDebugLocList(DebugLoc Loc) {DbgLocList.push_back(std::move(Loc));}
 
   /// Set or clear the nuw flag on this instruction, which must be an operator
   /// which supports this flag. See LangRef.html for the meaning of this flag.

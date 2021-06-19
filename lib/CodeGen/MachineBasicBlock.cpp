@@ -35,6 +35,9 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 #include <algorithm>
+// dingzhu patch
+#include <vector>
+#include <set>
 using namespace llvm;
 
 #define DEBUG_TYPE "codegen"
@@ -45,11 +48,14 @@ static cl::opt<bool> PrintSlotIndexes(
              "SlotIndexes when available"),
     cl::init(true), cl::Hidden);
 
+// dingzhu patch: initialize BBList when gen MBB
 MachineBasicBlock::MachineBasicBlock(MachineFunction &MF, const BasicBlock *B)
     : BB(B), Number(-1), xParent(&MF) {
   Insts.Parent = this;
-  if (B)
+  if (B) {
     IrrLoopHeaderWeight = B->getIrrLoopHeaderWeight();
+    BBList.insert(B);
+  }
 }
 
 MachineBasicBlock::~MachineBasicBlock() {
@@ -313,6 +319,17 @@ void MachineBasicBlock::print(raw_ostream &OS, ModuleSlotTracker &MST,
         OS << "<ir-block badref>";
       else
         OS << (Twine("%ir-block.") + Twine(Slot)).str();
+    }
+  }
+
+  // dingzhu patch:dump BBList
+  OS << "\nBBList:";
+  if (BBList.size()) {
+    std::set<const BasicBlock*>::iterator itea = BBList.begin();
+    for (; itea != BBList.end(); ++itea) {
+      if ((*itea)->hasName()) {
+        OS << "." << (*itea)->getName();
+      }
     }
   }
 
@@ -880,6 +897,16 @@ MachineBasicBlock *MachineBasicBlock::SplitCriticalEdge(MachineBasicBlock *Succ,
   DebugLoc DL;  // FIXME: this is nowhere
 
   MachineBasicBlock *NMBB = MF->CreateMachineBasicBlock();
+  // dingzhu patch
+  if (this->getBasicBlock()) {
+    NMBB->setBasicBlock(this->getBasicBlock());
+    if (this->getBBList().size()) {
+      NMBB->appendBasicBlockList(this->getBBList());
+    }
+    else {
+      NMBB->appendBasicBlockList(this->getBasicBlock());
+    }
+  }
   MF->insert(std::next(MachineFunction::iterator(this)), NMBB);
   LLVM_DEBUG(dbgs() << "Splitting critical edge: " << printMBBReference(*this)
                     << " -- " << printMBBReference(*NMBB) << " -- "
@@ -1317,13 +1344,36 @@ MachineBasicBlock::findBranchDebugLoc() {
 
   if (TI != end()) {
     DL = TI->getDebugLoc();
-    // LLVM dev choose a vague dbginfo while dealing with merging 2 diff dbginfo 
+    // dingzhu patch:LLVM dev choose a vague dbginfo while dealing with merging 2 diff dbginfo 
     // However, we focus on cmp inst, so we just need the first dbginfo
     // for (++TI ; TI != end() ; ++TI)
     //   if (TI->isBranch())
     //     DL = DILocation::getMergedLocation(DL, TI->getDebugLoc());
   }
   return DL;
+}
+
+/// dingzhu patch
+std::vector<DebugLoc>
+MachineBasicBlock::findBranchDebugLocList() {
+  DebugLoc DL;
+  std::vector<DebugLoc> DLL;
+  auto TI = getFirstTerminator();
+  while (TI != end() && !TI->isBranch())
+    ++TI;
+
+  if (TI != end()) {
+    DL = TI->getDebugLoc();
+    DLL.push_back(DL);
+    for (++TI ; TI != end() ; ++TI)
+      if (TI->isBranch()) {
+        DILocation *DI = TI->getDebugLoc();
+        if (DI) {
+          DLL.push_back(DI);
+        }
+      }
+  }
+  return DLL;
 }
 
 /// Return probability of the edge from this block to MBB.

@@ -64,6 +64,8 @@
 #include <iterator>
 #include <numeric>
 #include <vector>
+// dingzhu patch
+#include <set>
 
 using namespace llvm;
 
@@ -882,9 +884,22 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
   MachineBasicBlock *MBB = SameTails[commonTailIndex].getBlock();
 
   MachineFunction *MF = MBB->getParent();
+  // dingzhu patch: use set to collect BB labels;
+  // std::set<const BasicBlock*> BBs;
+  if (MBB->getBasicBlock())
+    MBB->appendBasicBlockList(MBB->getBasicBlock());
   std::vector<MachineBasicBlock::iterator> NextCommonInsts(SameTails.size());
   for (unsigned int i = 0 ; i != SameTails.size() ; ++i) {
     if (i != commonTailIndex) {
+      if (SameTails[i].getBlock()->getBasicBlock()) {
+        if (SameTails[i].getBlock()->getBBList().size()) {
+          std::set<const BasicBlock*> BBs = SameTails[i].getBlock()->getBBList();
+          MBB->appendBasicBlockList(BBs);
+        }
+        else {
+          MBB->appendBasicBlockList(SameTails[i].getBlock()->getBasicBlock());
+        }
+      }
       NextCommonInsts[i] = SameTails[i].getTailStartPos();
       mergeOperations(SameTails[i].getTailStartPos(), *MBB);
     } else {
@@ -893,6 +908,8 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
     }
   }
 
+  // MBB->setBasicBlockList(BBs);
+  
   for (auto &MI : *MBB) {
     if (!countsAsInstruction(MI))
       continue;
@@ -921,12 +938,15 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
       //     }
       //   }
       // }
+      // dingzhu patch
+      auto dllist = Pos->getDebugLocList();
+      MI.appendDebugLocList(dllist);
       DL = DILocation::getMergedLocation(DL, Pos->getDebugLoc());
       NextCommonInsts[i] = ++Pos;
+      
+
     }
-    // testBUG(MBB, 1);
     MI.setDebugLoc(DL);
-    // testBUG(MBB, 2);
   }
   
   if (UpdateLiveIns) {
@@ -1348,7 +1368,7 @@ static bool IsBetterFallthrough(MachineBasicBlock *MBB1,
 //   return DebugLoc();
 // }
 
-/// DING patch: new implementation of getBranchDebugLoc
+/// dingzhu patch: new implementation of getBranchDebugLoc
 /// The former impletation can handle this situation: the last branch inst
 /// is added without debugloc, so it just return null.
 static DebugLoc getBranchDebugLoc(MachineBasicBlock &MBB) {
