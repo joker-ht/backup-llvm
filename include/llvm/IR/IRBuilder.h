@@ -46,6 +46,8 @@
 #include <cstdint>
 #include <functional>
 #include <utility>
+// dingzhu patch
+#include <set>
 
 namespace llvm {
 
@@ -87,6 +89,7 @@ protected:
 /// Common base class shared among various IRBuilders.
 class IRBuilderBase {
   DebugLoc CurDbgLocation;
+  std::set<DebugLoc> CurDbgLocationList;
 
 protected:
   BasicBlock *BB;
@@ -149,6 +152,14 @@ public:
     InsertPt = SI->getIterator();
     assert(InsertPt != BB->end() && "Can't read debug loc from end()");
     SetCurrentDebugLocation(SI->getDebugLoc());
+    std::set<DebugLoc> dll;
+    if (I->getDebugLoc()) {
+      dll.insert(I->getDebugLoc());
+    }
+    if (SI->getDebugLoc()) {
+      dll.insert(SI->getDebugLoc());
+    }
+    SetCurrentDebugLocationList(dll);
   }
 
   /// This specifies that created instructions should be inserted at the
@@ -162,6 +173,10 @@ public:
 
   /// Set location information used by debugging information.
   void SetCurrentDebugLocation(DebugLoc L) { CurDbgLocation = std::move(L); }
+
+  void SetCurrentDebugLocationList(DebugLoc L) { CurDbgLocationList.insert(std::move(L)); }
+
+  void SetCurrentDebugLocationList(std::set<DebugLoc> dll) { CurDbgLocationList = dll; }
 
   /// Get location information used by debugging information.
   const DebugLoc &getCurrentDebugLocation() const { return CurDbgLocation; }

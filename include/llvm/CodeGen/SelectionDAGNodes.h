@@ -52,6 +52,8 @@
 #include <iterator>
 #include <string>
 #include <tuple>
+// dingzhu patch
+#include <set>
 
 namespace llvm {
 
@@ -642,6 +644,8 @@ private:
   /// Source line information.
   DebugLoc debugLoc;
 
+  /// dingzhu patch
+  std::set<DebugLoc> DebugLocList;
   /// Return a pointer to the specified value type.
   static const EVT *getValueTypeList(EVT VT);
 
@@ -752,9 +756,27 @@ public:
   /// Return the source location info.
   const DebugLoc &getDebugLoc() const { return debugLoc; }
 
+  /// dingzhu patch
+  const std::set<DebugLoc> getDebugLocList() const { return DebugLocList; }
+
+  void setDebugLocList(std::set<DebugLoc> dll) {
+    DebugLocList = std::move(dll); 
+  }
+
+  void appendDebugLocList(std::set<DebugLoc> dll) {
+    DebugLocList.insert(dll.begin(), dll.end());
+  }
+
+  void appendDebugLocList(DebugLoc dl) {
+    DebugLocList.insert(std::move(dl));
+  }
   /// Set source location info.  Try to avoid this, putting
   /// it in the constructor is preferable.
-  void setDebugLoc(DebugLoc dl) { debugLoc = std::move(dl); }
+  void setDebugLoc(DebugLoc dl) { 
+    debugLoc = std::move(dl); 
+    if (debugLoc)
+      DebugLocList.insert(debugLoc);
+  }
 
   /// This class provides iterator support for SDUse
   /// operands that use a specific SDNode.

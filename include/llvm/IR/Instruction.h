@@ -29,6 +29,7 @@
 #include <utility>
 // dingzhu patch
 #include <vector>
+#include <set>
 
 namespace llvm {
 
@@ -47,7 +48,7 @@ class Instruction : public User,
   BasicBlock *Parent;
   DebugLoc DbgLoc;                         // 'dbg' Metadata cache.
   // dingzhu patch
-  std::vector<DebugLoc> DbgLocList;
+  std::set<DebugLoc> DbgLocList;
 
   enum {
     /// This is a bit stored in the SubClassData field which indicates whether
@@ -329,13 +330,24 @@ public:
   void setProfWeight(uint64_t W);
 
   /// Set the debug location information for this instruction.
-  void setDebugLoc(DebugLoc Loc) { DbgLoc = std::move(Loc); }
+  void setDebugLoc(DebugLoc Loc) { 
+    DbgLoc = std::move(Loc); 
+    if (DbgLoc) {
+      DbgLocList.insert(DbgLoc);
+    }
+  }
 
   /// Return the debug location for this node as a DebugLoc.
   const DebugLoc &getDebugLoc() const { return DbgLoc; }
 
   /// dingzhu patch
-  void pushDebugLocList(DebugLoc Loc) {DbgLocList.push_back(std::move(Loc));}
+  const std::set<DebugLoc> &getDebugLocList() const { return DbgLocList; }
+
+  void setDebugLocList(std::set<DebugLoc> dll) { DbgLocList = dll; }
+
+  void appendDebugLocList(DebugLoc Loc) { DbgLocList.insert(std::move(Loc)); }
+
+  void appendDebugLocList(std::set<DebugLoc> dll) { DbgLocList.insert(dll.begin(), dll.end()); }
 
   /// Set or clear the nuw flag on this instruction, which must be an operator
   /// which supports this flag. See LangRef.html for the meaning of this flag.
