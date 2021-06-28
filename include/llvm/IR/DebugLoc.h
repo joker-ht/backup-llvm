@@ -16,7 +16,8 @@
 
 #include "llvm/IR/TrackingMDRef.h"
 #include "llvm/Support/DataTypes.h"
-
+// dingzhu patch
+#include <set>
 namespace llvm {
 
   class LLVMContext;
@@ -124,6 +125,8 @@ namespace llvm {
     /// prints source location /path/to/file.exe:line:col @[inlined at]
     void print(raw_ostream &OS) const;
   };
+
+typedef std::set<DebugLoc> DebugLocSet;
 
 } // end namespace llvm
 

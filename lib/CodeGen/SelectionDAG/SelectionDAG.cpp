@@ -79,6 +79,9 @@
 
 using namespace llvm;
 
+// dingzhu patch for test
+// static int dingtest = 1;
+
 /// makeVTList - Return an instance of the SDVTList struct initialized with the
 /// specified members.
 static SDVTList makeVTList(const EVT *VTs, unsigned NumVTs) {
@@ -1076,6 +1079,12 @@ SDNode *SelectionDAG::FindNodeOrInsertPos(const FoldingSetNodeID &ID,
                                           const SDLoc &DL, void *&InsertPos) {
   SDNode *N = CSEMap.FindNodeOrInsertPos(ID, InsertPos);
   if (N) {
+    if (filtFunc() && dingtest == 2 && N->getOpcode() == ISD::SETCC) {
+      errs() << "in SelectionDAG::FindNodeOrInsertPos setcc "; if (N) N->dump();
+    }
+
+    N->appendDebugLocList(DL.getDebugLocList());
+
     switch (N->getOpcode()) {
     case ISD::Constant:
     case ISD::ConstantFP:
@@ -4364,6 +4373,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT) {
 
   auto *N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(),
                               getVTList(VT));
+  if (N) {
+    N->appendDebugLocList(DL.getDebugLocList());
+  }
   CSEMap.InsertNode(N, IP);
 
   InsertNode(N);
@@ -4768,11 +4780,17 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
     }
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     N->setFlags(Flags);
     createOperands(N, Ops);
     CSEMap.InsertNode(N, IP);
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     createOperands(N, Ops);
   }
 
@@ -5517,11 +5535,17 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
     }
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     N->setFlags(Flags);
     createOperands(N, Ops);
     CSEMap.InsertNode(N, IP);
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     createOperands(N, Ops);
   }
 
@@ -5566,6 +5590,8 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
     break;
   }
   case ISD::SETCC: {
+    if (filtFunc() && dingtest == 2)
+      errs() << "getSetCC->getNode\n";
     assert(VT.isInteger() && "SETCC result type must be an integer!");
     assert(N1.getValueType() == N2.getValueType() &&
            "SETCC operands must have the same type!");
@@ -5575,11 +5601,17 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
             VT.getVectorNumElements() == N1.getValueType().getVectorNumElements()) &&
            "SETCC vector element counts must match!");
     // Use FoldSetCC to simplify SETCC's.
-    if (SDValue V = FoldSetCC(VT, N1, N2, cast<CondCodeSDNode>(N3)->get(), DL))
+    if (SDValue V = FoldSetCC(VT, N1, N2, cast<CondCodeSDNode>(N3)->get(), DL)) {
+      if (filtFunc() && dingtest == 2)
+        errs() << "getNode->FoldSetCC\n";
       return V;
+    }
+      
     // Vector constant folding.
     SDValue Ops[] = {N1, N2, N3};
     if (SDValue V = FoldConstantVectorArithmetic(Opcode, DL, VT, Ops)) {
+      if (filtFunc() && dingtest == 2)
+        errs() << "getNode->FoldConstantVectorArithmetic\n";
       NewSDValueDbgMsg(V, "New node vector constant folding: ", this);
       return V;
     }
@@ -5652,27 +5684,56 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
   SDNode *N;
   SDVTList VTs = getVTList(VT);
   SDValue Ops[] = {N1, N2, N3};
+  
+  if (filtFunc() && dingtest == 2 && Opcode == ISD::BRCOND) {
+        dbgs() << "getnode Ops: "; N2->dump(this);
+  }
   if (VT != MVT::Glue) {
     FoldingSetNodeID ID;
     AddNodeIDNode(ID, Opcode, VTs, Ops);
     void *IP = nullptr;
     if (SDNode *E = FindNodeOrInsertPos(ID, DL, IP)) {
+      if (filtFunc() && dingtest && Opcode == ISD::SETCC) {
+        dbgs() << "after SelectionDAG::FindNodeOrInsertPos setcc "; E->dump(this);
+      }
       E->intersectFlagsWith(Flags);
       return SDValue(E, 0);
     }
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
+    if (filtFunc() && dingtest == 2 && Opcode == ISD::SETCC) {
+        dbgs() << "setcc1 "; N->dump(this);
+    }
+    if (dingtest == 2 && N->getOpcode() == ISD::BRCOND) {
+      dbgs() << "step1--- "; N->dump(this);
+    }
     N->setFlags(Flags);
     createOperands(N, Ops);
     CSEMap.InsertNode(N, IP);
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
+    if (filtFunc() && dingtest == 2 && Opcode == ISD::SETCC) {
+        dbgs() << "setcc2 "; N->dump(this);
+    }
+    if (filtFunc() && dingtest == 2 && N->getOpcode() == ISD::BRCOND) {
+      dbgs() << "step2--- "; N->dump(this);
+    }
     createOperands(N, Ops);
   }
 
   InsertNode(N);
   SDValue V = SDValue(N, 0);
   NewSDValueDbgMsg(V, "Creating new node: ", this);
+  if (filtFunc() && dingtest && V.getOpcode() == ISD::BRCOND) {
+    dbgs() << "Creating new node: "; V.getNode()->dump(this);
+  }
+    
   return V;
 }
 
@@ -7350,12 +7411,22 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
   default: break;
   case ISD::BUILD_VECTOR:
     // Attempt to simplify BUILD_VECTOR.
-    if (SDValue V = FoldBUILD_VECTOR(DL, VT, Ops, *this))
+    if (SDValue V = FoldBUILD_VECTOR(DL, VT, Ops, *this)) {
+      if (V) {
+        V->appendDebugLocList(DL.getDebugLocList());
+      }
       return V;
+    }
+      
     break;
   case ISD::CONCAT_VECTORS:
-    if (SDValue V = foldCONCAT_VECTORS(DL, VT, Ops, *this))
+    if (SDValue V = foldCONCAT_VECTORS(DL, VT, Ops, *this)) {
+      if (V) {
+        V->appendDebugLocList(DL.getDebugLocList());
+      }
       return V;
+    }
+
     break;
   case ISD::SELECT_CC:
     assert(NumOps == 5 && "SELECT_CC takes 5 operands!");
@@ -7386,11 +7457,17 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
       return SDValue(E, 0);
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     createOperands(N, Ops);
 
     CSEMap.InsertNode(N, IP);
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     createOperands(N, Ops);
   }
 
@@ -7475,10 +7552,16 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, SDVTList VTList,
       return SDValue(E, 0);
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTList);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     createOperands(N, Ops);
     CSEMap.InsertNode(N, IP);
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTList);
+    if (N) {
+      N->appendDebugLocList(DL.getDebugLocList());
+    }
     createOperands(N, Ops);
   }
   InsertNode(N);
@@ -9715,6 +9798,9 @@ void SelectionDAG::createOperands(SDNode *Node, ArrayRef<SDValue> Vals) {
 
   bool IsDivergent = false;
   for (unsigned I = 0; I != Vals.size(); ++I) {
+    if (Node->getOpcode() == ISD::BRCOND) {
+      dbgs() << "Generating operands: "; Vals[I].getNode()->dump(this);
+    }
     Ops[I].setUser(Node);
     Ops[I].setInitial(Vals[I]);
     if (Ops[I].Val.getValueType() != MVT::Other) // Skip Chain. It does not carry divergence.
@@ -9725,6 +9811,9 @@ void SelectionDAG::createOperands(SDNode *Node, ArrayRef<SDValue> Vals) {
   IsDivergent |= TLI->isSDNodeSourceOfDivergence(Node, FLI, DA);
   if (!TLI->isSDNodeAlwaysUniform(Node))
     Node->SDNodeBits.IsDivergent = IsDivergent;
+  if (Node->getOpcode() == ISD::BRCOND) {
+    dbgs() << "Creating operands: "; Node->dump(this);
+  }
   checkForCycles(Node);
 }
 

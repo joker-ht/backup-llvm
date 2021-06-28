@@ -48,7 +48,7 @@ class Instruction : public User,
   BasicBlock *Parent;
   DebugLoc DbgLoc;                         // 'dbg' Metadata cache.
   // dingzhu patch
-  std::set<DebugLoc> DbgLocList;
+  DebugLocSet DbgLocList;
 
   enum {
     /// This is a bit stored in the SubClassData field which indicates whether
@@ -341,13 +341,13 @@ public:
   const DebugLoc &getDebugLoc() const { return DbgLoc; }
 
   /// dingzhu patch
-  const std::set<DebugLoc> &getDebugLocList() const { return DbgLocList; }
+  const DebugLocSet &getDebugLocList() const { return DbgLocList; }
 
-  void setDebugLocList(std::set<DebugLoc> dll) { DbgLocList = dll; }
+  void setDebugLocList(DebugLocSet dll) { DbgLocList = dll; }
 
   void appendDebugLocList(DebugLoc Loc) { DbgLocList.insert(std::move(Loc)); }
 
-  void appendDebugLocList(std::set<DebugLoc> dll) { DbgLocList.insert(dll.begin(), dll.end()); }
+  void appendDebugLocList(DebugLocSet dll) { DbgLocList.insert(dll.begin(), dll.end()); }
 
   /// Set or clear the nuw flag on this instruction, which must be an operator
   /// which supports this flag. See LangRef.html for the meaning of this flag.

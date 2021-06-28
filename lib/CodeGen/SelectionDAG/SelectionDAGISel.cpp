@@ -109,6 +109,9 @@
 
 using namespace llvm;
 
+// dingzhu patch test
+// to filtrate focused func 
+
 #define DEBUG_TYPE "isel"
 
 STATISTIC(NumFastIselFailures, "Number of instructions fast isel failed on");
@@ -406,8 +409,14 @@ static void computeUsesMSVCFloatingPoint(const Triple &TT, const Function &F,
   }
 }
 
+MachineFunction *currfunc = nullptr;
+std::string currname = "";
+
 bool SelectionDAGISel::runOnMachineFunction(MachineFunction &mf) {
   // If we already selected that function, we do not need to run SDISel.
+  // dingzhu patch
+  currfunc = &mf;
+  currname = "___slab_alloc";
   if (mf.getProperties().hasProperty(
           MachineFunctionProperties::Property::Selected))
     return false;
@@ -773,6 +782,16 @@ void SelectionDAGISel::ComputeLiveOutVRegInfo() {
   } while (!Worklist.empty());
 }
 
+// dingzhu patch for test
+// static int dingtest = 1;
+
+bool filtFunc() {
+  if (currname.size() == 0) return true;
+  if (currfunc && currfunc->getName() == currname)
+    return true;
+  return false;
+}
+
 void SelectionDAGISel::CodeGenAndEmitDAG() {
   StringRef GroupName = "sdag";
   StringRef GroupDescription = "Instruction Selection and Scheduling";
@@ -805,6 +824,13 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                     << "'\n";
              CurDAG->dump());
 
+  if (filtFunc() && dingtest) {
+    dbgs() << "Initial selection DAG: "
+                    << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                    << "'\n";
+             CurDAG->dump();
+  }
+
   if (ViewDAGCombine1 && MatchFilterBB)
     CurDAG->viewGraph("dag-combine1 input for " + BlockName);
 
@@ -824,6 +850,13 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                     << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
                     << "'\n";
              CurDAG->dump());
+
+  if (filtFunc() && dingtest) {
+    dbgs() << "Optimized lowered selection DAG: "
+                    << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                    << "'\n";
+             CurDAG->dump();
+  }
 
   // Second step, hack on the DAG until it only uses operations and types that
   // the target supports.
@@ -846,6 +879,13 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                     << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
                     << "'\n";
              CurDAG->dump());
+
+  if (filtFunc() && dingtest) {
+    dbgs() << "Type-legalized selection DAG: "
+                    << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                    << "'\n";
+             CurDAG->dump();
+  }
 
   // Only allow creation of legal node types.
   CurDAG->NewNodesMustHaveLegalTypes = true;
@@ -870,6 +910,12 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                       << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
                       << "'\n";
                CurDAG->dump());
+    if (filtFunc() && dingtest) {
+      dbgs() << "Optimized type-legalized selection DAG: "
+                      << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                      << "'\n";
+              CurDAG->dump();
+    }
   }
 
   {
@@ -883,6 +929,12 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                       << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
                       << "'\n";
                CurDAG->dump());
+    if (filtFunc() && dingtest) {
+      dbgs() << "Vector-legalized selection DAG: "
+                      << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                      << "'\n";
+              CurDAG->dump();
+    }
 
     {
       NamedRegionTimer T("legalize_types2", "Type Legalization 2", GroupName,
@@ -894,6 +946,13 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                       << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
                       << "'\n";
                CurDAG->dump());
+
+    if (filtFunc() && dingtest) {
+      dbgs() << "Vector/type-legalized selection DAG: "
+                      << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                      << "'\n";
+              CurDAG->dump();
+    }
 
     if (ViewDAGCombineLT && MatchFilterBB)
       CurDAG->viewGraph("dag-combine-lv input for " + BlockName);
@@ -909,6 +968,13 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                       << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
                       << "'\n";
                CurDAG->dump());
+
+    if (filtFunc() && dingtest) {
+      dbgs() << "Optimized vector-legalized selection DAG: "
+                      << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                      << "'\n";
+              CurDAG->dump();
+    }
 
 #ifndef NDEBUG
     if (TTI.hasBranchDivergence())
@@ -935,6 +1001,13 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                     << "'\n";
              CurDAG->dump());
 
+  if (filtFunc() && dingtest) {
+    dbgs() << "Legalized selection DAG: "
+                    << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                    << "'\n";
+            CurDAG->dump();
+  }
+
   if (ViewDAGCombine2 && MatchFilterBB)
     CurDAG->viewGraph("dag-combine2 input for " + BlockName);
 
@@ -955,6 +1028,13 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                     << "'\n";
              CurDAG->dump());
 
+  if (filtFunc() && dingtest) {
+    dbgs() << "Optimized legalized selection DAG: "
+                    << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                    << "'\n";
+            CurDAG->dump();
+  }
+
   if (OptLevel != CodeGenOpt::None)
     ComputeLiveOutVRegInfo();
 
@@ -973,6 +1053,14 @@ void SelectionDAGISel::CodeGenAndEmitDAG() {
                     << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
                     << "'\n";
              CurDAG->dump());
+
+  if (filtFunc() && dingtest) {
+    dbgs() << "Selected selection DAG: "
+                    << printMBBReference(*FuncInfo->MBB) << " '" << BlockName
+                    << "'\n";
+            CurDAG->dump();
+  }
+
 
   if (ViewSchedDAGs && MatchFilterBB)
     CurDAG->viewGraph("scheduler input for " + BlockName);

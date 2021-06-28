@@ -980,9 +980,12 @@ void SDNode::print(raw_ostream &OS, const SelectionDAG *G) const {
     OS << ", ";
     DL.print(OS);
   }
+  if (getDebugLoc() && DebugLocList.size() == 0) {
+    OS << " NO DebugLocList ";
+  }
   if (DebugLocList.size())
     OS << " DebugLocList: ";
-  std::set<DebugLoc>::iterator itea = DebugLocList.begin();
+  DebugLocSet::iterator itea = DebugLocList.begin();
   for (; itea != DebugLocList.end(); ++itea) {
     OS << ", ";
     itea->print(OS);

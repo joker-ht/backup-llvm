@@ -74,6 +74,9 @@
 
 using namespace llvm;
 
+// dingzhu patch test
+// static int dingtest = 1;
+
 #define DEBUG_TYPE "dagcombine"
 
 STATISTIC(NodesCombined   , "Number of dag nodes combined");
@@ -1440,6 +1443,10 @@ void DAGCombiner::Run(CombineLevel AtLevel) {
     }
 
     LLVM_DEBUG(dbgs() << "\nCombining: "; N->dump(&DAG));
+    if (filtFunc() && dingtest && N->getOpcode() == ISD::BRCOND) {
+      dbgs() << "\nCombining: "; N->dump(&DAG);
+    }
+      
 
     // Add any operands of the new node which have not yet been combined to the
     // worklist as well. Because the worklist uniques things already, this
@@ -1468,6 +1475,10 @@ void DAGCombiner::Run(CombineLevel AtLevel) {
            "Node was deleted but visit returned new node!");
 
     LLVM_DEBUG(dbgs() << " ... into: "; RV.getNode()->dump(&DAG));
+    if (filtFunc() && dingtest && RV.getOpcode() == ISD::BRCOND) {
+      dbgs() << " ... into: "; RV.getNode()->dump(&DAG);
+    }
+      
 
     if (N->getNumValues() == RV.getNode()->getNumValues())
       DAG.ReplaceAllUsesWith(N, RV.getNode());
@@ -7067,6 +7078,10 @@ SDValue DAGCombiner::visitXOR(SDNode *N) {
       default:
         llvm_unreachable("Unhandled SetCC Equivalent!");
       case ISD::SETCC:
+        if (filtFunc() && dingtest == 2) {
+          dbgs() << "visitXOR N0 "; if (N0) N0->dump();
+        }
+          
         return DAG.getSetCC(SDLoc(N0), VT, LHS, RHS, NotCC);
       case ISD::SELECT_CC:
         return DAG.getSelectCC(SDLoc(N0), LHS, RHS, N0.getOperand(2),
@@ -13537,18 +13552,24 @@ SDValue DAGCombiner::visitBRCOND(SDNode *N) {
   if (N1.getOpcode() == ISD::SETCC &&
       TLI.isOperationLegalOrCustom(ISD::BR_CC,
                                    N1.getOperand(0).getValueType())) {
-    // pass the detailed debugloc to BR_CC node
+    // dingzhu patch pass the detailed debugloc to BR_CC node
     // SDValue SN;
     unsigned order = N->getIROrder();
     N1.getNode()->setIROrder(order);
-    return DAG.getNode(ISD::BR_CC, SDLoc(N1.getNode()), MVT::Other,
+    return DAG.getNode(ISD::BR_CC, SDLoc(N1), MVT::Other,
                        Chain, N1.getOperand(2),
                        N1.getOperand(0), N1.getOperand(1), N2);
   }
 
   if (N1.hasOneUse()) {
-    if (SDValue NewN1 = rebuildSetCC(N1))
+    if (SDValue NewN1 = rebuildSetCC(N1)) {
+      if (filtFunc() && dingtest == 2) {
+        dbgs() << "visitBRCOND N1 "; N1->dump(&DAG);
+        dbgs() << "visitBRCOND NewN1 "; NewN1->dump(&DAG);
+        dbgs() << "tmp--- "; N->dump(&DAG);
+      }
       return DAG.getNode(ISD::BRCOND, SDLoc(N), MVT::Other, Chain, NewN1, N2);
+    }
   }
 
   return SDValue();
@@ -13611,6 +13632,10 @@ SDValue DAGCombiner::rebuildSetCC(SDValue N) {
     HandleSDNode XORHandle(N);
     while (N.getOpcode() == ISD::XOR) {
       SDValue Tmp = visitXOR(N.getNode());
+      if (filtFunc() && dingtest == 2) {
+        dbgs() << "rebuildSetCC Tmp "; if (Tmp) Tmp->dump();
+      }
+        
       // No simplification done.
       if (!Tmp.getNode())
         break;

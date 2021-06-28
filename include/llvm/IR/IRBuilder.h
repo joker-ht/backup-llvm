@@ -89,7 +89,7 @@ protected:
 /// Common base class shared among various IRBuilders.
 class IRBuilderBase {
   DebugLoc CurDbgLocation;
-  std::set<DebugLoc> CurDbgLocationList;
+  DebugLocSet CurDbgLocationList;
 
 protected:
   BasicBlock *BB;
@@ -152,7 +152,7 @@ public:
     InsertPt = SI->getIterator();
     assert(InsertPt != BB->end() && "Can't read debug loc from end()");
     SetCurrentDebugLocation(SI->getDebugLoc());
-    std::set<DebugLoc> dll;
+    DebugLocSet dll;
     if (I->getDebugLoc()) {
       dll.insert(I->getDebugLoc());
     }
@@ -176,7 +176,7 @@ public:
 
   void SetCurrentDebugLocationList(DebugLoc L) { CurDbgLocationList.insert(std::move(L)); }
 
-  void SetCurrentDebugLocationList(std::set<DebugLoc> dll) { CurDbgLocationList = dll; }
+  void SetCurrentDebugLocationList(DebugLocSet dll) { CurDbgLocationList = dll; }
 
   /// Get location information used by debugging information.
   const DebugLoc &getCurrentDebugLocation() const { return CurDbgLocation; }

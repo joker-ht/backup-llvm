@@ -54,6 +54,14 @@
 #include <utility>
 #include <vector>
 
+// dingzhu patch test
+static int dingtest = 1;
+
+extern llvm::MachineFunction *currfunc; 
+extern std::string currname; 
+
+bool filtFunc();
+
 namespace llvm {
 
 class AAResults;
@@ -1005,6 +1013,9 @@ public:
     if (Chain)
       return getNode(IsSignaling ? ISD::STRICT_FSETCCS : ISD::STRICT_FSETCC, DL,
                      {VT, MVT::Other}, {Chain, LHS, RHS, getCondCode(Cond)});
+    if (filtFunc() && dingtest == 2) {
+      errs() << "getSetCC false path "; DL.getDebugLoc().dump(); errs() << '\n';
+    }
     return getNode(ISD::SETCC, DL, VT, LHS, RHS, getCondCode(Cond));
   }
 

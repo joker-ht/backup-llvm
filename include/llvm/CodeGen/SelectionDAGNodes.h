@@ -645,7 +645,7 @@ private:
   DebugLoc debugLoc;
 
   /// dingzhu patch
-  std::set<DebugLoc> DebugLocList;
+  DebugLocSet DebugLocList;
   /// Return a pointer to the specified value type.
   static const EVT *getValueTypeList(EVT VT);
 
@@ -757,13 +757,13 @@ public:
   const DebugLoc &getDebugLoc() const { return debugLoc; }
 
   /// dingzhu patch
-  const std::set<DebugLoc> getDebugLocList() const { return DebugLocList; }
+  const DebugLocSet getDebugLocList() const { return DebugLocList; }
 
-  void setDebugLocList(std::set<DebugLoc> dll) {
+  void setDebugLocList(DebugLocSet dll) {
     DebugLocList = std::move(dll); 
   }
 
-  void appendDebugLocList(std::set<DebugLoc> dll) {
+  void appendDebugLocList(DebugLocSet dll) {
     DebugLocList.insert(dll.begin(), dll.end());
   }
 
@@ -1140,20 +1140,33 @@ protected:
 class SDLoc {
 private:
   DebugLoc DL;
+  // dingzhu patch
+  DebugLocSet DebugLocList;
   int IROrder = 0;
 
 public:
   SDLoc() = default;
-  SDLoc(const SDNode *N) : DL(N->getDebugLoc()), IROrder(N->getIROrder()) {}
+  SDLoc(const SDNode *N) : DL(N->getDebugLoc()), IROrder(N->getIROrder()) {
+    DebugLocList = N->getDebugLocList();
+  }
   SDLoc(const SDValue V) : SDLoc(V.getNode()) {}
   SDLoc(const Instruction *I, int Order) : IROrder(Order) {
     assert(Order >= 0 && "bad IROrder");
-    if (I)
+    if (I) {
       DL = I->getDebugLoc();
+      if (DL) {
+        DebugLocList.insert(DL);
+      }
+      auto dll = I->getDebugLocList();
+      if (dll.size()) {
+        DebugLocList.insert(dll.begin(), dll.end());
+      }
+    }
   }
 
   unsigned getIROrder() const { return IROrder; }
   const DebugLoc &getDebugLoc() const { return DL; }
+  const DebugLocSet &getDebugLocList() const { return DebugLocList; }
 };
 
 // Define inline functions from the SDValue class.
