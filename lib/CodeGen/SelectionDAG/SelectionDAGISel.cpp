@@ -409,12 +409,18 @@ static void computeUsesMSVCFloatingPoint(const Triple &TT, const Function &F,
   }
 }
 
+// dingzhu patch: for convenience test
+// set dingtest to 1 to dump dag info
+// set currname to dump specified func's dag info
+// set currname "" to dump all func's dag info
 MachineFunction *currfunc = nullptr;
 std::string currname = "";
+int dingtest = 0;
 
 bool SelectionDAGISel::runOnMachineFunction(MachineFunction &mf) {
   // If we already selected that function, we do not need to run SDISel.
   // dingzhu patch
+  dingtest = 0;
   currfunc = &mf;
   currname = "___slab_alloc";
   if (mf.getProperties().hasProperty(

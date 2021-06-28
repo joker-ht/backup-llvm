@@ -55,7 +55,7 @@
 #include <vector>
 
 // dingzhu patch test
-static int dingtest = 1;
+extern int dingtest;
 
 extern llvm::MachineFunction *currfunc; 
 extern std::string currname; 
