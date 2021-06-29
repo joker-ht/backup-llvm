@@ -9798,7 +9798,7 @@ void SelectionDAG::createOperands(SDNode *Node, ArrayRef<SDValue> Vals) {
 
   bool IsDivergent = false;
   for (unsigned I = 0; I != Vals.size(); ++I) {
-    if (Node->getOpcode() == ISD::BRCOND) {
+    if (dingtest && Node->getOpcode() == ISD::BRCOND) {
       dbgs() << "Generating operands: "; Vals[I].getNode()->dump(this);
     }
     Ops[I].setUser(Node);
@@ -9811,7 +9811,7 @@ void SelectionDAG::createOperands(SDNode *Node, ArrayRef<SDValue> Vals) {
   IsDivergent |= TLI->isSDNodeSourceOfDivergence(Node, FLI, DA);
   if (!TLI->isSDNodeAlwaysUniform(Node))
     Node->SDNodeBits.IsDivergent = IsDivergent;
-  if (Node->getOpcode() == ISD::BRCOND) {
+  if (dingtest && Node->getOpcode() == ISD::BRCOND) {
     dbgs() << "Creating operands: "; Node->dump(this);
   }
   checkForCycles(Node);
