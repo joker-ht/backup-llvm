@@ -253,7 +253,7 @@ private:
 
   DebugLoc debugLoc;                    // Source line information.
   // dingzhu patch
-  std::set<DebugLoc> DebugLocList;
+  DebugLocSet DebugLocList;
   // Intrusive list support
   friend struct ilist_traits<MachineInstr>;
   friend struct ilist_callback_traits<MachineBasicBlock>;
@@ -262,6 +262,11 @@ private:
   /// This constructor creates a copy of the given
   /// MachineInstr in the given MachineFunction.
   MachineInstr(MachineFunction &, const MachineInstr &);
+
+  /// dingzhu patch: during dag->mir phase, we need to pass dbgloclist from
+  /// dag node to mi
+  MachineInstr(MachineFunction &, const MCInstrDesc &tid, 
+               DebugLoc dl, DebugLocSet dll, bool NoImp = false);
 
   /// This constructor create a MachineInstr and add the implicit operands.
   /// It reserves space for number of operands specified by
@@ -411,7 +416,7 @@ public:
 
   /// dingzhu patch
   /// Returns the debug location list of this MachineInstr.
-  const std::set<DebugLoc> &getDebugLocList() const { return DebugLocList; }
+  const DebugLocSet &getDebugLocList() const { return DebugLocList; }
 
   /// Return the debug variable referenced by
   /// this DBG_VALUE instruction.
@@ -1597,7 +1602,7 @@ public:
   }
 
   /// add new debugloclist to DebugLocList
-  void appendDebugLocList(std::set<DebugLoc> dblist) {
+  void appendDebugLocList(DebugLocSet dblist) {
     DebugLocList.insert(dblist.begin(), dblist.end());
   }
 
