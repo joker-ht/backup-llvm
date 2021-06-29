@@ -345,6 +345,16 @@ MachineInstr *MachineFunction::CreateMachineInstr(const MCInstrDesc &MCID,
     MachineInstr(*this, MCID, DL, NoImp);
 }
 
+/// dingzhu patch:during dag->mir phase, we need to pass dbgloclist from
+/// dag node to mi
+MachineInstr *MachineFunction::CreateMachineInstr(const MCInstrDesc &MCID,
+                                                  const DebugLoc &DL,
+                                                  const DebugLocSet &DLL,
+                                                  bool NoImp) {
+  return new (InstructionRecycler.Allocate<MachineInstr>(Allocator))
+    MachineInstr(*this, MCID, DL, DLL, NoImp);
+}
+
 /// Create a new MachineInstr which is a copy of the 'Orig' instruction,
 /// identical in all ways except the instruction has no parent, prev, or next.
 MachineInstr *

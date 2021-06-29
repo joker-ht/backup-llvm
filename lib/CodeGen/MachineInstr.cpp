@@ -137,7 +137,8 @@ MachineInstr::MachineInstr(MachineFunction &MF, const MCInstrDesc &tid,
 /// MachineInstr ctor - Copies MachineInstr arg exactly
 ///
 MachineInstr::MachineInstr(MachineFunction &MF, const MachineInstr &MI)
-    : MCID(&MI.getDesc()), Info(MI.Info), debugLoc(MI.getDebugLoc()) {
+    : MCID(&MI.getDesc()), Info(MI.Info), debugLoc(MI.getDebugLoc()), 
+    DebugLocList(MI.getDebugLocList()) {
   assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
   // dingzhu patch
   if (debugLoc)
@@ -153,6 +154,26 @@ MachineInstr::MachineInstr(MachineFunction &MF, const MachineInstr &MI)
 
   // Copy all the sensible flags.
   setFlags(MI.Flags);
+}
+
+/// dingzhu patch
+MachineInstr::MachineInstr(MachineFunction &MF, const MCInstrDesc &tid,
+                           DebugLoc dl, DebugLocSet dll, bool NoImp)
+    : MCID(&tid), debugLoc(std::move(dl)), DebugLocList(dll) {
+  assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
+  // dingzhu patch
+  if (debugLoc) {
+    DebugLocList.insert(debugLoc);
+  }
+  // Reserve space for the expected number of operands.
+  if (unsigned NumOps = MCID->getNumOperands() +
+    MCID->getNumImplicitDefs() + MCID->getNumImplicitUses()) {
+    CapOperands = OperandCapacity::get(NumOps);
+    Operands = MF.allocateOperandArray(CapOperands);
+  }
+
+  if (!NoImp)
+    addImplicitDefUseOperands(MF);
 }
 
 /// getRegInfo - If this instruction is embedded into a MachineFunction,
