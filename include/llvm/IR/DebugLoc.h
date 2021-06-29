@@ -126,6 +126,7 @@ namespace llvm {
     void print(raw_ostream &OS) const;
   };
 
+// dingzhu patch
 typedef std::set<DebugLoc> DebugLocSet;
 
 } // end namespace llvm
