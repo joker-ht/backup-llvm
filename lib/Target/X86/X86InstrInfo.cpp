@@ -4659,7 +4659,9 @@ static MachineInstr *FuseTwoAddrInst(MachineFunction &MF, unsigned Opcode,
   // Create the base instruction with the memory operand as the first part.
   // Omit the implicit operands, something BuildMI can't do.
   MachineInstr *NewMI =
-      MF.CreateMachineInstr(TII.get(Opcode), MI.getDebugLoc(), true);
+      // dingzhu patch: inherit MI's
+      MF.CreateMachineInstr(TII.get(Opcode), MI.getDebugLoc(), 
+                            MI.getDebugLocList(), true);
   MachineInstrBuilder MIB(MF, NewMI);
   addOperands(MIB, MOs);
 
@@ -4689,7 +4691,9 @@ static MachineInstr *FuseInst(MachineFunction &MF, unsigned Opcode,
                               int PtrOffset = 0) {
   // Omit the implicit operands, something BuildMI can't do.
   MachineInstr *NewMI =
-      MF.CreateMachineInstr(TII.get(Opcode), MI.getDebugLoc(), true);
+      // dingzhu patch: inherit MI's
+      MF.CreateMachineInstr(TII.get(Opcode), MI.getDebugLoc(), 
+                            MI.getDebugLocList(), true);
   MachineInstrBuilder MIB(MF, NewMI);
 
   for (unsigned i = 0, e = MI.getNumOperands(); i != e; ++i) {
@@ -5524,7 +5528,10 @@ bool X86InstrInfo::unfoldMemoryOperand(
   }
 
   // Emit the data processing instruction.
-  MachineInstr *DataMI = MF.CreateMachineInstr(MCID, MI.getDebugLoc(), true);
+  MachineInstr *DataMI = 
+    // dingzhu patch: inherit MI's DebugLocList
+    MF.CreateMachineInstr(MCID, MI.getDebugLoc(), 
+                          MI.getDebugLocList(), true);
   MachineInstrBuilder MIB(MF, DataMI);
 
   if (FoldedStore)

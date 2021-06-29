@@ -851,6 +851,9 @@ bool MIParser::parseBasicBlock(MachineBasicBlock &MBB,
     if (parse(MI))
       return true;
     MBB.insert(MBB.end(), MI);
+    // dingzhu patch:test code
+    dbgs() << "MIPaser test \n";
+    MI->dump();
     if (IsInBundle) {
       PrevMI->setFlag(MachineInstr::BundledSucc);
       MI->setFlag(MachineInstr::BundledPred);
@@ -1018,8 +1021,6 @@ bool MIParser::parse(MachineInstr *&MI) {
   }
 
   // TODO: Check for extraneous machine operands.
-  // MI = MF.CreateMachineInstr(MCID, DebugLocation, /*NoImplicit=*/true);
-  // dingzhu patch
   MI = MF.CreateMachineInstr(MCID, DebugLocation, /*NoImplicit=*/true);
   MI->setFlags(Flags);
   for (const auto &Operand : Operands)
