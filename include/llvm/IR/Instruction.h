@@ -22,6 +22,7 @@
 #include "llvm/IR/SymbolTableListTraits.h"
 #include "llvm/IR/User.h"
 #include "llvm/IR/Value.h"
+#include "llvm/IR/InstIndex.h"
 #include "llvm/Support/Casting.h"
 #include <algorithm>
 #include <cassert>
@@ -49,6 +50,8 @@ class Instruction : public User,
   DebugLoc DbgLoc;                         // 'dbg' Metadata cache.
   // dingzhu patch
   DebugLocSet DbgLocList;
+  InstIndex ThisIndex;
+  InstIndexSet ThisIndexSet;
 
   enum {
     /// This is a bit stored in the SubClassData field which indicates whether
@@ -342,6 +345,18 @@ public:
 
   /// dingzhu patch
   const DebugLocSet &getDebugLocList() const { return DbgLocList; }
+
+  const InstIndex &getInstIndex() const { return ThisIndex; }
+
+  const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
+
+  void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; }
+
+  void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
+
+  void appendInstIndexSet(InstIndex SrcIndex) { ThisIndexSet.insert(SrcIndex); }
+
+  void appendInstIndexSet(InstIndexSet iis) { ThisIndexSet.insert(iis.begin(), iis.end()); }
 
   void setDebugLocList(DebugLocSet dll) { DbgLocList = dll; }
 

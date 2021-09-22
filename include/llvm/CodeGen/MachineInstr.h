@@ -24,6 +24,7 @@
 #include "llvm/CodeGen/MachineOperand.h"
 #include "llvm/CodeGen/TargetOpcodes.h"
 #include "llvm/IR/DebugLoc.h"
+#include "llvm/IR/InstIndex.h"
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/MC/MCInstrDesc.h"
 #include "llvm/MC/MCSymbol.h"
@@ -254,6 +255,9 @@ private:
   DebugLoc debugLoc;                    // Source line information.
   // dingzhu patch
   DebugLocSet DebugLocList;
+
+  InstIndex ThisIndex;
+  InstIndexSet ThisIndexSet;
   // Intrusive list support
   friend struct ilist_traits<MachineInstr>;
   friend struct ilist_callback_traits<MachineBasicBlock>;
@@ -416,7 +420,27 @@ public:
 
   /// dingzhu patch
   /// Returns the debug location list of this MachineInstr.
+
   const DebugLocSet &getDebugLocList() const { return DebugLocList; }
+
+  const InstIndex &getInstIndex() const { return ThisIndex; }
+
+  const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
+
+  void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; }
+
+  void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
+
+  void appendInstIndexSet(InstIndex SrcIndex) { ThisIndexSet.insert(SrcIndex); }
+
+  void appendInstIndexSet(InstIndexSet iis) { ThisIndexSet.insert(iis.begin(), iis.end()); }
+
+  void setDebugLocList(DebugLocSet dll) { DebugLocList = dll; }
+
+  // duplicate
+  // void appendDebugLocList(DebugLoc Loc) { DebugLocList.insert(std::move(Loc)); }
+
+  // void appendDebugLocList(DebugLocSet dll) { DebugLocList.insert(dll.begin(), dll.end()); }
 
   /// Return the debug variable referenced by
   /// this DBG_VALUE instruction.

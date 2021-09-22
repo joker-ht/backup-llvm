@@ -646,6 +646,9 @@ private:
 
   /// dingzhu patch
   DebugLocSet DebugLocList;
+
+  InstIndex ThisIndex;
+  InstIndexSet ThisIndexSet;
   /// Return a pointer to the specified value type.
   static const EVT *getValueTypeList(EVT VT);
 
@@ -758,6 +761,18 @@ public:
 
   /// dingzhu patch
   const DebugLocSet getDebugLocList() const { return DebugLocList; }
+
+  const InstIndex getInstIndex() const { return ThisIndex; }
+
+  const InstIndexSet getInstIndexSet() const { return ThisIndexSet; }
+
+  void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; }
+
+  void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
+
+  void appendInstIndexSet(InstIndex SrcIndex) { ThisIndexSet.insert(SrcIndex); }
+
+  void appendInstIndexSet(InstIndexSet iis) { ThisIndexSet.insert(iis.begin(), iis.end()); }
 
   void setDebugLocList(DebugLocSet dll) {
     DebugLocList = std::move(dll); 
@@ -1142,12 +1157,16 @@ private:
   DebugLoc DL;
   // dingzhu patch
   DebugLocSet DebugLocList;
+  InstIndex ThisIndex;
+  InstIndexSet ThisIndexSet;
   int IROrder = 0;
 
 public:
   SDLoc() = default;
   SDLoc(const SDNode *N) : DL(N->getDebugLoc()), IROrder(N->getIROrder()) {
     DebugLocList = N->getDebugLocList();
+    ThisIndex = N->getInstIndex();
+    ThisIndexSet = N->getInstIndexSet();
   }
   SDLoc(const SDValue V) : SDLoc(V.getNode()) {}
   SDLoc(const Instruction *I, int Order) : IROrder(Order) {
@@ -1161,12 +1180,19 @@ public:
       if (dll.size()) {
         DebugLocList.insert(dll.begin(), dll.end());
       }
+
+      ThisIndex = I->getInstIndex();
+      
+      ThisIndexSet.insert(ThisIndex);
+      auto iis = I->getInstIndexSet();
     }
   }
 
   unsigned getIROrder() const { return IROrder; }
   const DebugLoc &getDebugLoc() const { return DL; }
   const DebugLocSet &getDebugLocList() const { return DebugLocList; }
+  const InstIndex &getInstIndex() const { return ThisIndex; }
+  const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
 };
 
 // Define inline functions from the SDValue class.
