@@ -112,6 +112,8 @@ namespace llvm {
 
   ModulePass *createDependencyDumperPass();
 
+  // FunctionPass *createMarkInstIndexPass();
+
 }
 
 #endif

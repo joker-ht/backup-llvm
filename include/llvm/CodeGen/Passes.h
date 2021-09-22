@@ -404,6 +404,9 @@ namespace llvm {
   /// evaluation.
   ModulePass *createPreISelIntrinsicLoweringPass();
 
+  /// dingzhu patch
+  FunctionPass *createMarkInstIndexPass();
+
   /// GlobalMerge - This pass merges internal (by default) globals into structs
   /// to enable reuse of a base pointer by indexed addressing modes.
   /// It can also be configured to focus on size optimizations only.
