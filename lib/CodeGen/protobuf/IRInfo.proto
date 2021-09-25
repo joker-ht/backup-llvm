@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package mirpb; 
+package irpb; 
 
 message InstLoc {
     string Filename = 1;
@@ -22,7 +22,7 @@ message InstIndexList {
     repeated InstIndex Idxs = 1;
 }
 
-message MIRInst {
+message IRInst {
     string Opcode = 1;
     repeated string Oprand = 2;
     repeated InstLoc Locs = 3;
@@ -31,20 +31,20 @@ message MIRInst {
     InstIndexList Idxs = 6;
 }
 
-message MIRBasicBlock {
-    string MBBLabel = 1; 
-    string BBLabel = 2;  /* "NULL_BB" if no BB found*/
+message IRBasicBlock {
+    string BBLabel = 1; 
+    // string BBLabel = 2;  /* "NULL_BB" if no BB found*/
     repeated string BBLabelList = 5;
-    repeated MIRInst MIs = 3;
-    repeated string SuccMBBLabel = 4;
+    repeated IRInst Is = 3;
+    repeated string SuccBBLabel = 4;
 }
 
-message MIRFunction {
+message IRFunction {
     string FuncName = 1;
     uint32 FuncID = 2;
-    repeated MIRBasicBlock MBBs = 3;
+    repeated IRBasicBlock BBs = 3;
 }
 
-message MIRFunctionBook {
-    repeated MIRFunction MFs = 1;
+message IRFunctionBook {
+    repeated IRFunction Fs = 1;
 }
