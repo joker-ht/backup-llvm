@@ -939,9 +939,10 @@ void BranchFolder::mergeCommonTails(unsigned commonTailIndex) {
       //   }
       // }
       // dingzhu patch
-      auto dllist = Pos->getDebugLocList();
-      MI.appendDebugLocList(dllist);
+      // auto dllist = Pos->getDebugLocList();
+      // MI.appendDebugLocList(dllist);
       DL = DILocation::getMergedLocation(DL, Pos->getDebugLoc());
+      DL.appendInstIndexSet(Pos->getDebugLoc().getInstIndexSet());
       NextCommonInsts[i] = ++Pos;
       
 

@@ -15,8 +15,8 @@
 #define LLVM_IR_DEBUGLOC_H
 
 #include "llvm/IR/TrackingMDRef.h"
+#include "llvm/IR/InstIndex.h"
 #include "llvm/Support/DataTypes.h"
-// dingzhu patch
 #include <set>
 namespace llvm {
 
@@ -31,8 +31,12 @@ namespace llvm {
   ///
   /// To avoid extra includes, \a DebugLoc doubles the \a DILocation API with a
   /// one based on relatively opaque \a MDNode pointers.
+
+  // dingzhu patch: add InstIndex to DebugLoc class
   class DebugLoc {
     TrackingMDNodeRef Loc;
+    InstIndex ThisIndex;
+    InstIndexSet ThisIndexSet;
 
   public:
     DebugLoc() = default;
@@ -47,6 +51,19 @@ namespace llvm {
     /// supported in order to handle forward references when reading textual
     /// IR.
     explicit DebugLoc(const MDNode *N);
+
+    // dingzhu patch
+    const InstIndex &getInstIndex() const { return ThisIndex; }
+
+    const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
+
+    void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; }
+
+    void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
+
+    void appendInstIndexSet(InstIndex SrcIndex) { ThisIndexSet.insert(SrcIndex); }
+
+    void appendInstIndexSet(InstIndexSet iis) { ThisIndexSet.insert(iis.begin(), iis.end()); }
 
     /// Get the underlying \a DILocation.
     ///
@@ -117,8 +134,8 @@ namespace llvm {
     bool isImplicitCode() const;
     void setImplicitCode(bool ImplicitCode);
 
-    bool operator==(const DebugLoc &DL) const { return Loc == DL.Loc; }
-    bool operator!=(const DebugLoc &DL) const { return Loc != DL.Loc; }
+    bool operator==(const DebugLoc &DL) const { return Loc == DL.Loc && ThisIndex == DL.ThisIndex && ThisIndexSet == DL.ThisIndexSet; }
+    bool operator!=(const DebugLoc &DL) const { return Loc != DL.Loc || ThisIndex != DL.ThisIndex || ThisIndexSet != DL.ThisIndexSet; }
 
     void dump() const;
 

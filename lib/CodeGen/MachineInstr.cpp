@@ -112,39 +112,40 @@ void MachineInstr::addImplicitDefUseOperands(MachineFunction &MF) {
       addOperand(MF, MachineOperand::CreateReg(*ImpUses, false, true));
 }
 
-/// MachineInstr ctor - This constructor creates a MachineInstr and adds the
-/// implicit operands. It reserves space for the number of operands specified by
-/// the MCInstrDesc.
-MachineInstr::MachineInstr(MachineFunction &MF, const MCInstrDesc &tid,
-                           DebugLoc dl, bool NoImp)
-    : MCID(&tid), debugLoc(std::move(dl)) {
-  assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
-  // dingzhu patch
-  if (debugLoc) {
-    DebugLocList.insert(debugLoc);
-  }
-  // Reserve space for the expected number of operands.
-  if (unsigned NumOps = MCID->getNumOperands() +
-    MCID->getNumImplicitDefs() + MCID->getNumImplicitUses()) {
-    CapOperands = OperandCapacity::get(NumOps);
-    Operands = MF.allocateOperandArray(CapOperands);
-  }
+// /// MachineInstr ctor - This constructor creates a MachineInstr and adds the
+// /// implicit operands. It reserves space for the number of operands specified by
+// /// the MCInstrDesc.
+// MachineInstr::MachineInstr(MachineFunction &MF, const MCInstrDesc &tid,
+//                            DebugLoc dl, bool NoImp)
+//     : MCID(&tid), debugLoc(std::move(dl)) {
+//   assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
+//   // dingzhu patch
+//   if (debugLoc) {
+//     DebugLocList.insert(debugLoc);
+//   }
+//   // Reserve space for the expected number of operands.
+//   if (unsigned NumOps = MCID->getNumOperands() +
+//     MCID->getNumImplicitDefs() + MCID->getNumImplicitUses()) {
+//     CapOperands = OperandCapacity::get(NumOps);
+//     Operands = MF.allocateOperandArray(CapOperands);
+//   }
 
-  if (!NoImp)
-    addImplicitDefUseOperands(MF);
-}
+//   if (!NoImp)
+//     addImplicitDefUseOperands(MF);
+// }
 
 /// MachineInstr ctor - Copies MachineInstr arg exactly
 ///
 MachineInstr::MachineInstr(MachineFunction &MF, const MachineInstr &MI)
-    : MCID(&MI.getDesc()), Info(MI.Info), debugLoc(MI.getDebugLoc()), 
-    DebugLocList(MI.getDebugLocList()) {
+    : MCID(&MI.getDesc()), Info(MI.Info), debugLoc(MI.getDebugLoc())
+    // , DebugLocList(MI.getDebugLocList()), ThisIndex(MI.getInstIndex()), ThisIndexSet(MI.getInstIndexSet()) 
+    {
   assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
-  // dingzhu patch
-  if (debugLoc)
-    DebugLocList.insert(debugLoc);
-  auto dllist = MI.getDebugLocList();
-  DebugLocList.insert(dllist.begin(), dllist.end());
+  // dingzhu patch:修改初始化列表
+  // if (debugLoc)
+  //   DebugLocList.insert(debugLoc);
+  // auto dllist = MI.getDebugLocList();
+  // DebugLocList.insert(dllist.begin(), dllist.end());
   CapOperands = OperandCapacity::get(MI.getNumOperands());
   Operands = MF.allocateOperandArray(CapOperands);
 
@@ -156,15 +157,22 @@ MachineInstr::MachineInstr(MachineFunction &MF, const MachineInstr &MI)
   setFlags(MI.Flags);
 }
 
+/// MachineInstr ctor - This constructor creates a MachineInstr and adds the
+/// implicit operands. It reserves space for the number of operands specified by
+/// the MCInstrDesc.
 /// dingzhu patch
 MachineInstr::MachineInstr(MachineFunction &MF, const MCInstrDesc &tid,
-                           DebugLoc dl, DebugLocSet dll, bool NoImp)
-    : MCID(&tid), debugLoc(std::move(dl)), DebugLocList(dll) {
+                           DebugLoc dl, 
+                          //  DebugLocSet dll, InstIndex ii, InstIndexSet iis, 
+                           bool NoImp)
+    : MCID(&tid), debugLoc(std::move(dl))
+    // , DebugLocList(dll), ThisIndex(ii), ThisIndexSet(iis) 
+    {
   assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
   // dingzhu patch
-  if (debugLoc) {
-    DebugLocList.insert(debugLoc);
-  }
+  // if (debugLoc) {
+  //   DebugLocList.insert(debugLoc);
+  // }
   // Reserve space for the expected number of operands.
   if (unsigned NumOps = MCID->getNumOperands() +
     MCID->getNumImplicitDefs() + MCID->getNumImplicitUses()) {
@@ -1836,22 +1844,47 @@ void MachineInstr::print(raw_ostream &OS, ModuleSlotTracker &MST,
     }
     OS << ' ';
     DL.print(OS);
+
+    // print InstIndex
+    // ThisIndex.dump();
+    if (!this->isDebugValue() ) {
+      OS << " InstIndex: ";
+      this->getInstIndex().print(OS);
+
+      
+      InstIndexSet IIS = this->getInstIndexSet();
+      if (IIS.size()) {
+        OS << " InstIndexSet size: " <<  IIS.size() << " ";
+        InstIndexSet::iterator it = IIS.begin();
+        for (; it != IIS.end(); ++it) {
+          it->print(OS);
+        }
+      } else {
+        OS << " No InstIndexSet";
+      }
+    }
+    
+    
   }
 
   // dingzhu patch
   // print DebugLocList
-  if (DebugLocList.size()) {
-    std::set<DebugLoc>::iterator it = DebugLocList.begin();
-    OS << "\nDebugLocList: ";
-    int count = 0;
-    for (; it != DebugLocList.end(); ++it) {
-      if (*it) {
-        ++count;
-        OS << count << ".";
-        it->print(OS);
-      }
-    }
-  }
+  // if (DebugLocList.size()) {
+  //   std::set<DebugLoc>::iterator it = DebugLocList.begin();
+  //   OS << "\nDebugLocList: ";
+  //   int count = 0;
+  //   for (; it != DebugLocList.end(); ++it) {
+  //     if (*it) {
+  //       ++count;
+  //       OS << count << ".";
+  //       it->print(OS);
+  //     }
+  //   }
+  // }
+
+
+  
+
   // Print extra comments for DEBUG_VALUE.
   if (isDebugValue() && getOperand(e - 2).isMetadata()) {
     if (!HaveSemi) {

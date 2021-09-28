@@ -254,10 +254,10 @@ private:
 
   DebugLoc debugLoc;                    // Source line information.
   // dingzhu patch
-  DebugLocSet DebugLocList;
+  // DebugLocSet DebugLocList;
 
-  InstIndex ThisIndex;
-  InstIndexSet ThisIndexSet;
+  // InstIndex ThisIndex;
+  // InstIndexSet ThisIndexSet;
   // Intrusive list support
   friend struct ilist_traits<MachineInstr>;
   friend struct ilist_callback_traits<MachineBasicBlock>;
@@ -267,16 +267,21 @@ private:
   /// MachineInstr in the given MachineFunction.
   MachineInstr(MachineFunction &, const MachineInstr &);
 
-  /// dingzhu patch: during dag->mir phase, we need to pass dbgloclist from
-  /// dag node to mi
-  MachineInstr(MachineFunction &, const MCInstrDesc &tid, 
-               DebugLoc dl, DebugLocSet dll, bool NoImp = false);
-
   /// This constructor create a MachineInstr and add the implicit operands.
   /// It reserves space for number of operands specified by
   /// MCInstrDesc.  An explicit DebugLoc is supplied.
-  MachineInstr(MachineFunction &, const MCInstrDesc &tid, DebugLoc dl,
+  /// dingzhu patch: during dag->mir phase, we need to pass dbgloclist,InstIndex and InstIndexSet from
+  /// dag node to mi
+  MachineInstr(MachineFunction &, const MCInstrDesc &tid, 
+               DebugLoc dl, 
+              //  DebugLocSet dll, InstIndex ii, InstIndexSet iis, 
                bool NoImp = false);
+
+  // /// This constructor create a MachineInstr and add the implicit operands.
+  // /// It reserves space for number of operands specified by
+  // /// MCInstrDesc.  An explicit DebugLoc is supplied.
+  // MachineInstr(MachineFunction &, const MCInstrDesc &tid, DebugLoc dl,
+  //              bool NoImp = false);
 
   // MachineInstrs are pool-allocated and owned by MachineFunction.
   friend class MachineFunction;
@@ -421,21 +426,21 @@ public:
   /// dingzhu patch
   /// Returns the debug location list of this MachineInstr.
 
-  const DebugLocSet &getDebugLocList() const { return DebugLocList; }
+  // const DebugLocSet &getDebugLocList() const { return DebugLocList; }
 
-  const InstIndex &getInstIndex() const { return ThisIndex; }
+  const InstIndex &getInstIndex() const { return debugLoc.getInstIndex(); }
 
-  const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
+  const InstIndexSet &getInstIndexSet() const { return debugLoc.getInstIndexSet(); }
 
-  void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; }
+  void setInstIndex(InstIndex ii) { debugLoc.setInstIndex(ii); debugLoc.appendInstIndexSet(ii); }
 
-  void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
+  void setInstIndexSet(InstIndexSet iis) { debugLoc.setInstIndexSet(iis); }
 
-  void appendInstIndexSet(InstIndex SrcIndex) { ThisIndexSet.insert(SrcIndex); }
+  void appendInstIndexSet(InstIndex ii) { debugLoc.appendInstIndexSet(ii); }
 
-  void appendInstIndexSet(InstIndexSet iis) { ThisIndexSet.insert(iis.begin(), iis.end()); }
+  void appendInstIndexSet(InstIndexSet iis) { debugLoc.appendInstIndexSet(iis); }
 
-  void setDebugLocList(DebugLocSet dll) { DebugLocList = dll; }
+  // void setDebugLocList(DebugLocSet dll) { DebugLocList = dll; }
 
   // duplicate
   // void appendDebugLocList(DebugLoc Loc) { DebugLocList.insert(std::move(Loc)); }
@@ -1614,21 +1619,21 @@ public:
     debugLoc = std::move(dl);
     // dingzhu patch
     // set DebugLocList while set debugloc
-    if (debugLoc)
-      DebugLocList.insert(debugLoc);
+    // if (debugLoc)
+    //   DebugLocList.insert(debugLoc);
     assert(debugLoc.hasTrivialDestructor() && "Expected trivial destructor");
   }
 
   /// dingzhu patch
   /// add new debugloc to DebugLocList
-  void appendDebugLocList(DebugLoc dl) {
-    DebugLocList.insert(std::move(dl));
-  }
+  // void appendDebugLocList(DebugLoc dl) {
+  //   DebugLocList.insert(std::move(dl));
+  // }
 
   /// add new debugloclist to DebugLocList
-  void appendDebugLocList(DebugLocSet dblist) {
-    DebugLocList.insert(dblist.begin(), dblist.end());
-  }
+  // void appendDebugLocList(DebugLocSet dblist) {
+  //   DebugLocList.insert(dblist.begin(), dblist.end());
+  // }
 
   /// Erase an operand from an instruction, leaving it with one
   /// fewer operand than it started with.

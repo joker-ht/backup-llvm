@@ -1083,7 +1083,11 @@ SDNode *SelectionDAG::FindNodeOrInsertPos(const FoldingSetNodeID &ID,
       errs() << "in SelectionDAG::FindNodeOrInsertPos setcc "; if (N) N->dump();
     }
 
-    N->appendDebugLocList(DL.getDebugLocList());
+    // dingzhu patch
+    // N->appendDebugLocList(DL.getDebugLocList());
+
+    // N->setInstIndex(DL.getInstIndex());
+    // N->appendInstIndexSet(DL.getInstIndexSet());
 
     switch (N->getOpcode()) {
     case ISD::Constant:
@@ -4374,7 +4378,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT) {
   auto *N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(),
                               getVTList(VT));
   if (N) {
-    N->appendDebugLocList(DL.getDebugLocList());
+    // N->appendDebugLocList(DL.getDebugLocList());
+    // N->setInstIndex(DL.getInstIndex());
+    // N->appendInstIndexSet(DL.getInstIndexSet());
   }
   CSEMap.InsertNode(N, IP);
 
@@ -4781,7 +4787,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     N->setFlags(Flags);
     createOperands(N, Ops);
@@ -4789,7 +4797,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     createOperands(N, Ops);
   }
@@ -5536,7 +5546,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     N->setFlags(Flags);
     createOperands(N, Ops);
@@ -5544,7 +5556,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     createOperands(N, Ops);
   }
@@ -5702,7 +5716,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+    //   N->appendDebugLocList(DL.getDebugLocList());
+    //   N->setInstIndex(DL.getInstIndex());
+    //   N->appendInstIndexSet(DL.getInstIndexSet());
     }
     if (filtFunc() && dingtest == 2 && Opcode == ISD::SETCC) {
         dbgs() << "setcc1 "; N->dump(this);
@@ -5716,7 +5732,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     if (filtFunc() && dingtest == 2 && Opcode == ISD::SETCC) {
         dbgs() << "setcc2 "; N->dump(this);
@@ -7413,7 +7431,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
     // Attempt to simplify BUILD_VECTOR.
     if (SDValue V = FoldBUILD_VECTOR(DL, VT, Ops, *this)) {
       if (V) {
-        V->appendDebugLocList(DL.getDebugLocList());
+        // V->appendDebugLocList(DL.getDebugLocList());
+        // V->setInstIndex(DL.getInstIndex());
+        // V->appendInstIndexSet(DL.getInstIndexSet());
       }
       return V;
     }
@@ -7422,7 +7442,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
   case ISD::CONCAT_VECTORS:
     if (SDValue V = foldCONCAT_VECTORS(DL, VT, Ops, *this)) {
       if (V) {
-        V->appendDebugLocList(DL.getDebugLocList());
+        // V->appendDebugLocList(DL.getDebugLocList());
+        // V->setInstIndex(DL.getInstIndex());
+        // V->appendInstIndexSet(DL.getInstIndexSet());
       }
       return V;
     }
@@ -7458,7 +7480,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     createOperands(N, Ops);
 
@@ -7466,7 +7490,9 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT,
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     createOperands(N, Ops);
   }
@@ -7553,14 +7579,18 @@ SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, SDVTList VTList,
 
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTList);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     createOperands(N, Ops);
     CSEMap.InsertNode(N, IP);
   } else {
     N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTList);
     if (N) {
-      N->appendDebugLocList(DL.getDebugLocList());
+      // N->appendDebugLocList(DL.getDebugLocList());
+      // N->setInstIndex(DL.getInstIndex());
+      // N->appendInstIndexSet(DL.getInstIndexSet());
     }
     createOperands(N, Ops);
   }

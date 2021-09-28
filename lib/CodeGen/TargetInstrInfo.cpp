@@ -498,12 +498,12 @@ static MachineInstr *foldPatchpoint(MachineFunction &MF, MachineInstr &MI,
       return nullptr;
   }
 
-  // MachineInstr *NewMI =
-  //     MF.CreateMachineInstr(TII.get(MI.getOpcode()), MI.getDebugLoc(), true);
-  // dingzhu patch:
   MachineInstr *NewMI =
-      MF.CreateMachineInstr(TII.get(MI.getOpcode()), MI.getDebugLoc(), 
-                            MI.getDebugLocList(), true);
+      MF.CreateMachineInstr(TII.get(MI.getOpcode()), MI.getDebugLoc(), true);
+  // dingzhu patch:
+  // MachineInstr *NewMI =
+  //     MF.CreateMachineInstr(TII.get(MI.getOpcode()), MI.getDebugLoc(), 
+  //                           MI.getDebugLocList(), MI.getInstIndex(), MI.getInstIndexSet(), true);
   MachineInstrBuilder MIB(MF, NewMI);
 
   // No need to fold return, the meta data, and function arguments

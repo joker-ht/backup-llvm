@@ -22,6 +22,8 @@
 
 namespace llvm {
 
+  class raw_ostream;
+
   class InstIndex {
     // format: funcname, BBlabel, Inst num in bb
     std::tuple<std::string, std::string, int> Index;
@@ -76,6 +78,8 @@ namespace llvm {
     }
 
     void dump() const;
+
+    void print(raw_ostream &OS) const;
 
   };
 

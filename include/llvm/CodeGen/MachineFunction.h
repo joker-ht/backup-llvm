@@ -721,10 +721,12 @@ public:
   MachineInstr *CreateMachineInstr(const MCInstrDesc &MCID, const DebugLoc &DL,
                                    bool NoImp = false);
 
-  /// dingzhu patch:during dag->mir phase, we need to pass dbgloclist from
-  /// dag node to mi
-  MachineInstr *CreateMachineInstr(const MCInstrDesc &MCID, const DebugLoc &DL,
-                                   const DebugLocSet &DLL, bool NoImp = false);
+  // /// dingzhu patch:during dag->mir phase, we need to pass dbgloclist from
+  // /// dag node to mi
+  // MachineInstr *CreateMachineInstr(const MCInstrDesc &MCID, const DebugLoc &DL,
+  //                                  const DebugLocSet &DLL, const InstIndex &II, const InstIndexSet &IIS, 
+  //                                  bool NoImp = false);
+
   /// Create a new MachineInstr which is a copy of \p Orig, identical in all
   /// ways except the instruction has no parent, prev, or next. Bundling flags
   /// are reset.

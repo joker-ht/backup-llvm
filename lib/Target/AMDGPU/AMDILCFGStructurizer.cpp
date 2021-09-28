@@ -219,6 +219,7 @@ protected:
   void orderBlocks(MachineFunction *MF);
 
   // Function originally from CFGStructTraits
+  // dingzhu patch: add para to these funcs
   void insertInstrEnd(MachineBasicBlock *MBB, int NewOpcode,
                       const DebugLoc &DL = DebugLoc());
   MachineInstr *insertInstrBefore(MachineBasicBlock *MBB, int NewOpcode,

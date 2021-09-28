@@ -771,7 +771,8 @@ bool InstructionSelector::executeMatchTable(
         OutMIs.resize(NewInsnID + 1);
 
       OutMIs[NewInsnID] = BuildMI(*State.MIs[0]->getParent(), State.MIs[0],
-                                  State.MIs[0]->getDebugLoc(), TII.get(Opcode));
+                                  State.MIs[0]->getDebugLoc(), 
+                                  TII.get(Opcode));
       DEBUG_WITH_TYPE(TgtInstructionSelector::getName(),
                       dbgs() << CurrentIdx << ": GIR_BuildMI(OutMIs["
                              << NewInsnID << "], " << Opcode << ")\n");

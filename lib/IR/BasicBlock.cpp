@@ -421,6 +421,8 @@ BasicBlock *BasicBlock::splitBasicBlock(iterator I, const Twine &BBName) {
 
   // Save DebugLoc of split point before invalidating iterator.
   DebugLoc Loc = I->getDebugLoc();
+  // dingzhu patch
+  InstIndex Idx = I->getInstIndex();
   // Move all of the specified instructions from the original basic block into
   // the new basic block.
   New->getInstList().splice(New->end(), this->getInstList(), I, end());
@@ -428,6 +430,7 @@ BasicBlock *BasicBlock::splitBasicBlock(iterator I, const Twine &BBName) {
   // Add a branch instruction to the newly formed basic block.
   BranchInst *BI = BranchInst::Create(New, this);
   BI->setDebugLoc(Loc);
+  BI->setInstIndex(Idx);
 
   // Now we must loop through all of the successors of the New block (which
   // _were_ the successors of the 'this' block), and update any PHI nodes in

@@ -425,137 +425,152 @@ inline MachineInstrBuilder BuildMI(MachineBasicBlock *BB, const DebugLoc &DL,
   return BuildMI(*BB, BB->end(), DL, MCID, DestReg);
 }
 
-/// dingzhu patch: overload of BuildMI, which add parameter DebugLocSet
-inline MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID) {
-  return MachineInstrBuilder(MF, MF.CreateMachineInstr(MCID, DL, DLL));
-}
+// /// dingzhu patch: overload of BuildMI, which add parameter DebugLocSet
+// inline MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID ) {
+//   return MachineInstrBuilder(MF, MF.CreateMachineInstr(MCID, DL, DLL, II, IIS));
+// }
 
-inline MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID, Register DestReg) {
-  return MachineInstrBuilder(MF, MF.CreateMachineInstr(MCID, DL, DLL))
-           .addReg(DestReg, RegState::Define);
-}
+// inline MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID, Register DestReg) {
+//   return MachineInstrBuilder(MF, MF.CreateMachineInstr(MCID, DL, DLL, II, IIS))
+//            .addReg(DestReg, RegState::Define);
+// }
 
-/// This version of the builder inserts the newly-built instruction before
-/// the given position in the given MachineBasicBlock, and sets up the first
-/// operand as a destination virtual register.
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
-                                   MachineBasicBlock::iterator I,
-                                   const DebugLoc &DL, 
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID,
-                                   Register DestReg) {
-  MachineFunction &MF = *BB.getParent();
-  MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL);
-  BB.insert(I, MI);
-  return MachineInstrBuilder(MF, MI).addReg(DestReg, RegState::Define);
-}
+// /// This version of the builder inserts the newly-built instruction before
+// /// the given position in the given MachineBasicBlock, and sets up the first
+// /// operand as a destination virtual register.
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
+//                                    MachineBasicBlock::iterator I,
+//                                    const DebugLoc &DL, 
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID,
+//                                    Register DestReg) {
+//   MachineFunction &MF = *BB.getParent();
+//   MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL, II, IIS);
+//   BB.insert(I, MI);
+//   return MachineInstrBuilder(MF, MI).addReg(DestReg, RegState::Define);
+// }
 
-/// This version of the builder inserts the newly-built instruction before
-/// the given position in the given MachineBasicBlock, and sets up the first
-/// operand as a destination virtual register.
-///
-/// If \c I is inside a bundle, then the newly inserted \a MachineInstr is
-/// added to the same bundle.
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
-                                   MachineBasicBlock::instr_iterator I,
-                                   const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID,
-                                   Register DestReg) {
-  MachineFunction &MF = *BB.getParent();
-  MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL);
-  BB.insert(I, MI);
-  return MachineInstrBuilder(MF, MI).addReg(DestReg, RegState::Define);
-}
+// /// This version of the builder inserts the newly-built instruction before
+// /// the given position in the given MachineBasicBlock, and sets up the first
+// /// operand as a destination virtual register.
+// ///
+// /// If \c I is inside a bundle, then the newly inserted \a MachineInstr is
+// /// added to the same bundle.
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
+//                                    MachineBasicBlock::instr_iterator I,
+//                                    const DebugLoc &DL, 
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID,
+//                                    Register DestReg) {
+//   MachineFunction &MF = *BB.getParent();
+//   MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL, II, IIS);
+//   BB.insert(I, MI);
+//   return MachineInstrBuilder(MF, MI).addReg(DestReg, RegState::Define);
+// }
 
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr &I,
-                                   const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID,
-                                   Register DestReg) {
-  // Calling the overload for instr_iterator is always correct.  However, the
-  // definition is not available in headers, so inline the check.
-  if (I.isInsideBundle())
-    return BuildMI(BB, MachineBasicBlock::instr_iterator(I), DL, DLL, MCID, DestReg);
-  return BuildMI(BB, MachineBasicBlock::iterator(I), DL, DLL, MCID, DestReg);
-}
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr &I,
+//                                    const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID,
+//                                    Register DestReg) {
+//   // Calling the overload for instr_iterator is always correct.  However, the
+//   // definition is not available in headers, so inline the check.
+//   if (I.isInsideBundle())
+//     return BuildMI(BB, MachineBasicBlock::instr_iterator(I), DL, DLL, II, IIS, MCID, DestReg);
+//   return BuildMI(BB, MachineBasicBlock::iterator(I), DL, DLL, II, IIS, MCID, DestReg);
+// }
 
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr *I,
-                                   const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID,
-                                   Register DestReg) {
-  return BuildMI(BB, *I, DL, DLL, MCID, DestReg);
-}
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr *I,
+//                                    const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID,
+//                                    Register DestReg) {
+//   return BuildMI(BB, *I, DL, DLL, II, IIS, MCID, DestReg);
+// }
 
-/// This version of the builder inserts the newly-built instruction before the
-/// given position in the given MachineBasicBlock, and does NOT take a
-/// destination register.
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
-                                   MachineBasicBlock::iterator I,
-                                   const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID) {
-  MachineFunction &MF = *BB.getParent();
-  MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL);
-  BB.insert(I, MI);
-  return MachineInstrBuilder(MF, MI);
-}
+// /// This version of the builder inserts the newly-built instruction before the
+// /// given position in the given MachineBasicBlock, and does NOT take a
+// /// destination register.
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
+//                                    MachineBasicBlock::iterator I,
+//                                    const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID) {
+//   MachineFunction &MF = *BB.getParent();
+//   MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL, II, IIS);
+//   BB.insert(I, MI);
+//   return MachineInstrBuilder(MF, MI);
+// }
 
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
-                                   MachineBasicBlock::instr_iterator I,
-                                   const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID) {
-  MachineFunction &MF = *BB.getParent();
-  MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL);
-  BB.insert(I, MI);
-  return MachineInstrBuilder(MF, MI);
-}
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
+//                                    MachineBasicBlock::instr_iterator I,
+//                                    const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID) {
+//   MachineFunction &MF = *BB.getParent();
+//   MachineInstr *MI = MF.CreateMachineInstr(MCID, DL, DLL, II, IIS);
+//   BB.insert(I, MI);
+//   return MachineInstrBuilder(MF, MI);
+// }
 
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr &I,
-                                   const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID) {
-  // Calling the overload for instr_iterator is always correct.  However, the
-  // definition is not available in headers, so inline the check.
-  if (I.isInsideBundle())
-    return BuildMI(BB, MachineBasicBlock::instr_iterator(I), DL, DLL, MCID);
-  return BuildMI(BB, MachineBasicBlock::iterator(I), DL, DLL, MCID);
-}
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr &I,
+//                                    const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID) {
+//   // Calling the overload for instr_iterator is always correct.  However, the
+//   // definition is not available in headers, so inline the check.
+//   if (I.isInsideBundle())
+//     return BuildMI(BB, MachineBasicBlock::instr_iterator(I), DL, DLL, II, IIS, MCID);
+//   return BuildMI(BB, MachineBasicBlock::iterator(I), DL, DLL, II, IIS, MCID);
+// }
 
-inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr *I,
-                                   const DebugLoc &DL, const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID) {
-  return BuildMI(BB, *I, DL, DLL, MCID);
-}
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock &BB, MachineInstr *I,
+//                                    const DebugLoc &DL, const DebugLocSet &DLL,
+//                                    const InstIndex &II, const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID) {
+//   return BuildMI(BB, *I, DL, DLL, II, IIS, MCID);
+// }
 
-/// This version of the builder inserts the newly-built instruction at the end
-/// of the given MachineBasicBlock, and does NOT take a destination register.
-inline MachineInstrBuilder BuildMI(MachineBasicBlock *BB, const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID) {
-  return BuildMI(*BB, BB->end(), DL, DLL, MCID);
-}
+// /// This version of the builder inserts the newly-built instruction at the end
+// /// of the given MachineBasicBlock, and does NOT take a destination register.
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock *BB, const DebugLoc &DL,
+//                                    const DebugLocSet &DLL, const InstIndex &II,
+//                                    const InstIndexSet &IIS, 
+//                                    const MCInstrDesc &MCID) {
+//   return BuildMI(*BB, BB->end(), DL, DLL, II, IIS, MCID);
+// }
 
-/// This version of the builder inserts the newly-built instruction at the
-/// end of the given MachineBasicBlock, and sets up the first operand as a
-/// destination virtual register.
-inline MachineInstrBuilder BuildMI(MachineBasicBlock *BB, const DebugLoc &DL,
-                                   const DebugLocSet &DLL,
-                                   const MCInstrDesc &MCID, Register DestReg) {
-  return BuildMI(*BB, BB->end(), DL, DLL, MCID, DestReg);
-}
+// /// This version of the builder inserts the newly-built instruction at the
+// /// end of the given MachineBasicBlock, and sets up the first operand as a
+// /// destination virtual register.
+// inline MachineInstrBuilder BuildMI(MachineBasicBlock *BB, const DebugLoc &DL,
+//                                    const DebugLocSet &DLL,  const InstIndex &II,
+//                                    const InstIndexSet &IIS,
+//                                    const MCInstrDesc &MCID, Register DestReg) {
+//   return BuildMI(*BB, BB->end(), DL, DLL, II, IIS, MCID, DestReg);
+// }
 
 /// This version of the builder builds a DBG_VALUE intrinsic
 /// for either a value in a register or a register-indirect
 /// address.  The convention is that a DBG_VALUE is indirect iff the
 /// second operand is an immediate.
+// dingzhu patch: add para DLL, II, IIS
 MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
+                            // const DebugLocSet &DLL, const InstIndex &II,
+                            // const InstIndexSet &IIS,
                             const MCInstrDesc &MCID, bool IsIndirect,
                             Register Reg, const MDNode *Variable,
                             const MDNode *Expr);
@@ -563,6 +578,8 @@ MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
 /// This version of the builder builds a DBG_VALUE intrinsic
 /// for a MachineOperand.
 MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
+                            // const DebugLocSet &DLL, const InstIndex &II,
+                            // const InstIndexSet &IIS,
                             const MCInstrDesc &MCID, bool IsIndirect,
                             MachineOperand &MO, const MDNode *Variable,
                             const MDNode *Expr);
@@ -572,6 +589,8 @@ MachineInstrBuilder BuildMI(MachineFunction &MF, const DebugLoc &DL,
 /// address and inserts it at position I.
 MachineInstrBuilder BuildMI(MachineBasicBlock &BB,
                             MachineBasicBlock::iterator I, const DebugLoc &DL,
+                            // const DebugLocSet &DLL, const InstIndex &II,
+                            // const InstIndexSet &IIS,
                             const MCInstrDesc &MCID, bool IsIndirect,
                             Register Reg, const MDNode *Variable,
                             const MDNode *Expr);

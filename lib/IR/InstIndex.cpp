@@ -35,7 +35,11 @@ InstIndex& InstIndex::operator = (const InstIndex& SrcIndex) {
 
 }
 
-void InstIndex::dump() const {
-    dbgs() << "Index:" << FuncName << '_' << BBLabel << '_' << InstNum;
+#if !defined(NDEBUG) || defined(LLVM_ENABLE_DUMP)
+LLVM_DUMP_METHOD void InstIndex::dump() const { print(dbgs()); }
+#endif
+
+void InstIndex::print(raw_ostream &OS) const {
+  OS << " Index:" << FuncName << '%' << BBLabel << '%' << InstNum;
 }
 

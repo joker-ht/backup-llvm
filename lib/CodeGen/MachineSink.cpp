@@ -843,11 +843,17 @@ static void performSink(MachineInstr &MI, MachineBasicBlock &SuccToSinkTo,
   // wrong location information.
   if (!SuccToSinkTo.empty() && InsertPos != SuccToSinkTo.end()) {
     // dingzhu patch
-    if (InsertPos->getDebugLoc()) {
-      MI.appendDebugLocList(InsertPos->getDebugLoc());
-    }
-    MI.setDebugLoc(DILocation::getMergedLocation(MI.getDebugLoc(),
-                                                 InsertPos->getDebugLoc()));
+    // if (InsertPos->getDebugLoc()) {
+    //   MI.appendDebugLocList(InsertPos->getDebugLoc());
+    // }
+    // MI.setDebugLoc(DILocation::getMergedLocation(MI.getDebugLoc(),
+    //                                              InsertPos->getDebugLoc()));
+    DebugLoc DL = DILocation::getMergedLocation(MI.getDebugLoc(), InsertPos->getDebugLoc());
+    DL.setInstIndex(MI.getInstIndex());
+    DL.setInstIndexSet(MI.getInstIndexSet());
+    DL.appendInstIndexSet(InsertPos->getInstIndexSet());
+    MI.setDebugLoc(DL);
+
   }
   else
     MI.setDebugLoc(DebugLoc());

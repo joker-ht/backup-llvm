@@ -49,9 +49,9 @@ class Instruction : public User,
   BasicBlock *Parent;
   DebugLoc DbgLoc;                         // 'dbg' Metadata cache.
   // dingzhu patch
-  DebugLocSet DbgLocList;
-  InstIndex ThisIndex;
-  InstIndexSet ThisIndexSet;
+  // DebugLocSet DbgLocList;
+  // InstIndex ThisIndex;
+  // InstIndexSet ThisIndexSet;
 
   enum {
     /// This is a bit stored in the SubClassData field which indicates whether
@@ -335,34 +335,34 @@ public:
   /// Set the debug location information for this instruction.
   void setDebugLoc(DebugLoc Loc) { 
     DbgLoc = std::move(Loc); 
-    if (DbgLoc) {
-      DbgLocList.insert(DbgLoc);
-    }
+    // if (DbgLoc) {
+    //   DbgLocList.insert(DbgLoc);
+    // }
   }
 
   /// Return the debug location for this node as a DebugLoc.
   const DebugLoc &getDebugLoc() const { return DbgLoc; }
 
   /// dingzhu patch
-  const DebugLocSet &getDebugLocList() const { return DbgLocList; }
+  // const DebugLocSet &getDebugLocList() const { return DbgLocList; }
 
-  const InstIndex &getInstIndex() const { return ThisIndex; }
+  const InstIndex &getInstIndex() const { return DbgLoc.getInstIndex(); }
 
-  const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
+  const InstIndexSet &getInstIndexSet() const { return DbgLoc.getInstIndexSet(); }
 
-  void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; }
+  void setInstIndex(InstIndex ii) { DbgLoc.setInstIndex(ii); DbgLoc.appendInstIndexSet(ii); }
 
-  void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
+  void setInstIndexSet(InstIndexSet iis) { DbgLoc.setInstIndexSet(iis); }
 
-  void appendInstIndexSet(InstIndex SrcIndex) { ThisIndexSet.insert(SrcIndex); }
+  void appendInstIndexSet(InstIndex ii) { DbgLoc.appendInstIndexSet(ii); }
 
-  void appendInstIndexSet(InstIndexSet iis) { ThisIndexSet.insert(iis.begin(), iis.end()); }
+  void appendInstIndexSet(InstIndexSet iis) { DbgLoc.appendInstIndexSet(iis); }
 
-  void setDebugLocList(DebugLocSet dll) { DbgLocList = dll; }
+  // void setDebugLocList(DebugLocSet dll) { DbgLocList = dll; }
 
-  void appendDebugLocList(DebugLoc Loc) { DbgLocList.insert(std::move(Loc)); }
+  // void appendDebugLocList(DebugLoc Loc) { DbgLocList.insert(std::move(Loc)); }
 
-  void appendDebugLocList(DebugLocSet dll) { DbgLocList.insert(dll.begin(), dll.end()); }
+  // void appendDebugLocList(DebugLocSet dll) { DbgLocList.insert(dll.begin(), dll.end()); }
 
   /// Set or clear the nuw flag on this instruction, which must be an operator
   /// which supports this flag. See LangRef.html for the meaning of this flag.

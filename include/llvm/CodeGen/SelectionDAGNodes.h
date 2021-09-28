@@ -766,7 +766,7 @@ public:
 
   const InstIndexSet getInstIndexSet() const { return ThisIndexSet; }
 
-  void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; }
+  void setInstIndex(InstIndex SrcIndex) { ThisIndex = SrcIndex; ThisIndexSet.insert(SrcIndex); }
 
   void setInstIndexSet(InstIndexSet iis) { ThisIndexSet = iis; }
 
@@ -1156,43 +1156,56 @@ class SDLoc {
 private:
   DebugLoc DL;
   // dingzhu patch
-  DebugLocSet DebugLocList;
-  InstIndex ThisIndex;
-  InstIndexSet ThisIndexSet;
+  // DebugLocSet DebugLocList;
+  // InstIndex ThisIndex;
+  // InstIndexSet ThisIndexSet;
   int IROrder = 0;
 
 public:
   SDLoc() = default;
   SDLoc(const SDNode *N) : DL(N->getDebugLoc()), IROrder(N->getIROrder()) {
-    DebugLocList = N->getDebugLocList();
-    ThisIndex = N->getInstIndex();
-    ThisIndexSet = N->getInstIndexSet();
+    // DebugLocList = N->getDebugLocList();
+    // ThisIndex = N->getInstIndex();
+    // ThisIndexSet = N->getInstIndexSet();
   }
   SDLoc(const SDValue V) : SDLoc(V.getNode()) {}
   SDLoc(const Instruction *I, int Order) : IROrder(Order) {
     assert(Order >= 0 && "bad IROrder");
     if (I) {
       DL = I->getDebugLoc();
-      if (DL) {
-        DebugLocList.insert(DL);
-      }
-      auto dll = I->getDebugLocList();
-      if (dll.size()) {
-        DebugLocList.insert(dll.begin(), dll.end());
-      }
+      // if (DL) {
+      //   DebugLocList.insert(DL);
+      // }
+      // auto dll = I->getDebugLocList();
+      // if (dll.size()) {
+      //   DebugLocList.insert(dll.begin(), dll.end());
+      // }
 
-      ThisIndex = I->getInstIndex();
+      // ThisIndex = I->getInstIndex();
       
-      ThisIndexSet.insert(ThisIndex);
-      auto iis = I->getInstIndexSet();
+      // ThisIndexSet.insert(ThisIndex);
+      // auto iis = I->getInstIndexSet();
     }
   }
 
   unsigned getIROrder() const { return IROrder; }
+
   const DebugLoc &getDebugLoc() const { return DL; }
-  const DebugLocSet &getDebugLocList() const { return DebugLocList; }
-  const InstIndex &getInstIndex() const { return ThisIndex; }
-  const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
+
+  const InstIndex &getInstIndex() const { return DL.getInstIndex(); }
+
+  const InstIndexSet &getInstIndexSet() const { return DL.getInstIndexSet(); }
+
+  void setInstIndex(InstIndex ii) { DL.setInstIndex(ii); DL.appendInstIndexSet(ii); }
+
+  void setInstIndexSet(InstIndexSet iis) { DL.setInstIndexSet(iis); }
+
+  void appendInstIndexSet(InstIndex ii) { DL.appendInstIndexSet(ii); }
+
+  void appendInstIndexSet(InstIndexSet iis) { DL.appendInstIndexSet(iis); }
+  // const DebugLocSet &getDebugLocList() const { return DebugLocList; }
+  // const InstIndex &getInstIndex() const { return ThisIndex; }
+  // const InstIndexSet &getInstIndexSet() const { return ThisIndexSet; }
 };
 
 // Define inline functions from the SDValue class.

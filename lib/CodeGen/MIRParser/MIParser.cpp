@@ -1021,7 +1021,10 @@ bool MIParser::parse(MachineInstr *&MI) {
   }
 
   // TODO: Check for extraneous machine operands.
-  MI = MF.CreateMachineInstr(MCID, DebugLocation, /*NoImplicit=*/true);
+  // dingzhu patch
+  MI = MF.CreateMachineInstr(MCID, DebugLocation,
+                              // MI->getDebugLocList(), MI->getInstIndex(), MI->getInstIndexSet(),
+                               /*NoImplicit=*/true);
   MI->setFlags(Flags);
   for (const auto &Operand : Operands)
     MI->addOperand(MF, Operand.Operand);

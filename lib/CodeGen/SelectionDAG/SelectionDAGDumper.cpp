@@ -980,15 +980,45 @@ void SDNode::print(raw_ostream &OS, const SelectionDAG *G) const {
     OS << ", ";
     DL.print(OS);
   }
-  if (getDebugLoc() && DebugLocList.size() == 0) {
-    OS << " NO DebugLocList ";
-  }
-  if (DebugLocList.size())
-    OS << " DebugLocList: ";
-  DebugLocSet::iterator itea = DebugLocList.begin();
-  for (; itea != DebugLocList.end(); ++itea) {
-    OS << ", ";
-    itea->print(OS);
-  }
 
+  // dingzhu patch
+  // This if is to exclude Nodes like BasicBlock, register
+  switch(getOpcode()) {
+    case ISD::STORE:
+    case ISD::LOAD:
+    case ISD::GlobalAddress:
+    case ISD::TargetGlobalAddress: {
+      return;
+    }
+    
+  }
+  if (getDebugLoc()) {
+    if (DebugLocList.size() == 0) {
+      OS << " NO DebugLocList ";
+    }
+    else {
+      OS << " DebugLocList: ";
+      DebugLocSet::iterator itea = DebugLocList.begin();
+      for (; itea != DebugLocList.end(); ++itea) {
+        OS << ", ";
+        itea->print(OS);
+      }
+    }
+
+    OS << " Thisindex: ";
+    ThisIndex.dump();
+
+    if (ThisIndexSet.size()) {
+      OS << " ThisIndexList: ";
+      InstIndexSet::iterator it = ThisIndexSet.begin();
+      for (; it != ThisIndexSet.end(); ++it) {
+        OS << ", ";
+        it->dump();
+      } 
+
+    }
+    else {
+      OS << " No InstIndex ";
+    }
+  }
 }
